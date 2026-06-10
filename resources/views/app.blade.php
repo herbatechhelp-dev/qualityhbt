@@ -11,10 +11,10 @@
             $faviconPath = \App\Models\Setting::getValue('app_favicon_path');
         @endphp
         @if($faviconPath)
-            <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . $faviconPath) }}">
+            <link rel="icon" href="{{ asset('storage/' . $faviconPath) }}">
             <link rel="shortcut icon" href="{{ asset('storage/' . $faviconPath) }}">
         @else
-            <link rel="icon" type="image/x-icon" href="/favicon.ico">
+            <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
         @endif
 
         <!-- Fonts -->

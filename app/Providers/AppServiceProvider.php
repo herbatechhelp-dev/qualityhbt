@@ -27,5 +27,12 @@ class AppServiceProvider extends ServiceProvider
                 ini_set('openssl.cafile', $path);
             }
         }
+
+        // On cPanel hosting, the document root is public_html/ instead of public/
+        // Override the public path so Vite manifest and assets are found correctly
+        $publicHtmlPath = base_path('public_html');
+        if (is_dir($publicHtmlPath)) {
+            $this->app->bind('path.public', fn() => $publicHtmlPath);
+        }
     }
 }

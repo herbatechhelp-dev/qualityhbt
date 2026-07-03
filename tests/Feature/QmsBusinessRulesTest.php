@@ -18,21 +18,26 @@ class QmsBusinessRulesTest extends TestCase
 
         $response = $this->actingAs($user)->post(route('change-requests.store'), [
             'type' => 'CRA',
-            'sifat_perubahan' => 'Permanen',
+            'sifat_perubahan' => 'Formula',
             'department' => 'Produksi',
-            'risk_identification' => 'Potensi kegagalan mesin tablet',
-            'potential_cause' => 'Kurang pemeliharaan berkala',
+            'awal_sebelum_perubahan' => 'Kondisi awal sebelum dirubah',
+            'usulan_perubahan' => 'Rencana usulan perubahan baru',
+            'alasan_perubahan' => 'Alasan dilakukannya perubahan',
+            'analisis_dampak' => 'Analisis dampak risiko kualitas',
             'severity' => 6,
             'occurrence' => 4,
             'detection' => 3,
-            'risk_control' => 'Inspeksi manual harian',
-            'action' => 'Jadwalkan PM bulanan',
             'submit_type' => 'submit',
         ]);
 
         $response->assertRedirect(route('change-requests.index'));
         $this->assertDatabaseHas('change_requests', [
             'type' => 'CRA',
+            'sifat_perubahan' => 'Formula',
+            'awal_sebelum_perubahan' => 'Kondisi awal sebelum dirubah',
+            'usulan_perubahan' => 'Rencana usulan perubahan baru',
+            'alasan_perubahan' => 'Alasan dilakukannya perubahan',
+            'analisis_dampak' => 'Analisis dampak risiko kualitas',
             'severity' => 6,
             'occurrence' => 4,
             'detection' => 3,
@@ -47,8 +52,11 @@ class QmsBusinessRulesTest extends TestCase
 
         $response = $this->actingAs($user)->post(route('change-requests.store'), [
             'type' => 'CRB',
-            'sifat_perubahan' => 'Sementara',
             'department' => 'HRD',
+            'awal_sebelum_perubahan' => 'Kondisi awal sebelum dirubah',
+            'usulan_perubahan' => 'Rencana usulan perubahan baru',
+            'alasan_perubahan' => 'Alasan dilakukannya perubahan',
+            'analisis_dampak' => 'Analisis dampak risiko kualitas',
             'submit_type' => 'submit',
         ]);
 
@@ -56,8 +64,390 @@ class QmsBusinessRulesTest extends TestCase
         $this->assertDatabaseHas('change_requests', [
             'type' => 'CRB',
             'rpn' => null,
+            'sifat_perubahan' => null,
+            'awal_sebelum_perubahan' => 'Kondisi awal sebelum dirubah',
+            'usulan_perubahan' => 'Rencana usulan perubahan baru',
+            'alasan_perubahan' => 'Alasan dilakukannya perubahan',
+            'analisis_dampak' => 'Analisis dampak risiko kualitas',
             'status' => 'OPEN',
         ]);
+    }
+
+    public function test_qa_can_evaluate_cr_with_multi_stage_verification_data()
+    {
+        $qa = User::factory()->create(['role' => 'superadmin']);
+        $initiator = User::factory()->create(['role' => 'initiator']);
+
+        $cr = \App\Models\ChangeRequest::create([
+            'cr_number' => 'CR/2026/0001',
+            'type' => 'CRA',
+            'sifat_perubahan' => 'Formula',
+            'department' => 'Produksi',
+            'status' => 'OPEN',
+            'initiator_id' => $initiator->id,
+        ]);
+
+        $verificationData = [
+            'qa_1' => [
+                'pengerjaan_sesuai' => true,
+                'ulasan' => 'Pengerjaan sesuai dengan standar operasional.',
+                'diulas_oleh' => $qa->name,
+                'tanggal' => '2026-07-03',
+                'paraf' => true,
+                'submitted' => true,
+                'hu_approved' => 'APPROVED',
+                'om_approved' => 'APPROVED',
+                'gm_approved' => 'APPROVED',
+            ],
+            'qa_2' => [
+                'no_registrasi' => 'REG/CR/2026/0001',
+                'nama_produk' => 'Paracetamol 500mg',
+                'pom_status' => 'option1',
+                'documents' => [
+                    [
+                        'jenis' => 'Spesifikasi',
+                        'no_dokumen' => 'SP-05/RND/001-127.00',
+                        'tanggal_berlaku' => '2025-08-25',
+                        'pic' => 'RND',
+                        'timeline' => 'Akhir Mei',
+                    ]
+                ]
+            ],
+            'qa_3' => [
+                'no_pengendalian' => 'CTRL/CR/2026/0001',
+                'implementations' => [
+                    [
+                        'pic' => 'RND',
+                        'perubahan' => 'Uji klinis tahap akhir',
+                        'tanggal_dilakukan' => '2026-07-01',
+                        'bukti_dokumen_path' => 'attachments/qa/bukti.pdf',
+                        'tanggal_berlaku' => '2026-07-05',
+                    ]
+                ],
+                'verifikasi_completed' => true,
+            ]
+        ];
+
+        $response = $this->actingAs($qa)->post(route('change-requests.evaluate', $cr->id), [
+            'status' => 'COMPLETE',
+            'rencana_tindakan' => 'Rencana tindakan verifikasi akhir',
+            'pic_id' => $initiator->id,
+            'timeline' => '2026-07-10',
+            'hasil_verifikasi' => 'Hasil verifikasi lengkap',
+            'qa_verification_data' => $verificationData,
+        ]);
+
+        $response->assertRedirect(route('change-requests.show', $cr->id));
+        
+        $this->assertDatabaseHas('change_requests', [
+            'id' => $cr->id,
+            'status' => 'COMPLETE',
+            'rencana_tindakan' => 'Rencana tindakan verifikasi akhir',
+            'pic_id' => $initiator->id,
+            'timeline' => '2026-07-10',
+            'hasil_verifikasi' => 'Hasil verifikasi lengkap',
+        ]);
+
+        $cr->refresh();
+        $this->assertEquals($verificationData, $cr->qa_verification_data);
+    }
+
+    public function test_sequential_approval_validation_and_role_restrictions()
+    {
+        $initiator = User::factory()->create(['role' => 'initiator']);
+        $hu = User::factory()->create(['role' => 'head_of_quality']);
+        $om = User::factory()->create(['role' => 'operational_manager']);
+        $gm = User::factory()->create(['role' => 'general_manager']);
+        $qa = User::factory()->create(['role' => 'qa']);
+
+        $cr = \App\Models\ChangeRequest::create([
+            'cr_number' => 'CR/2026/0002',
+            'type' => 'CRA',
+            'sifat_perubahan' => 'Formula',
+            'department' => 'Produksi',
+            'status' => 'OPEN',
+            'initiator_id' => $initiator->id,
+            'qa_verification_data' => [
+                'qa_1' => [
+                    'submitted' => true,
+                    'hu_approved' => 'PENDING',
+                    'om_approved' => 'PENDING',
+                    'gm_approved' => 'PENDING',
+                ]
+            ]
+        ]);
+
+        // 1. QA Officer tries to approve HU -> Should fail (403)
+        $response = $this->actingAs($qa)->post(route('change-requests.evaluate', $cr->id), [
+            'status' => 'IN REVIEW',
+            'qa_verification_data' => [
+                'qa_1' => [
+                    'submitted' => true,
+                    'hu_approved' => 'APPROVED',
+                    'om_approved' => 'PENDING',
+                    'gm_approved' => 'PENDING',
+                ]
+            ]
+        ]);
+        $response->assertStatus(403);
+
+        // 2. Head of Quality (HU) approves HU -> Should succeed
+        $response = $this->actingAs($hu)->post(route('change-requests.evaluate', $cr->id), [
+            'status' => 'IN REVIEW',
+            'qa_verification_data' => [
+                'qa_1' => [
+                    'submitted' => true,
+                    'hu_approved' => 'APPROVED',
+                    'om_approved' => 'PENDING',
+                    'gm_approved' => 'PENDING',
+                ]
+            ]
+        ]);
+        $response->assertRedirect(route('change-requests.show', $cr->id));
+        $cr->refresh();
+        $this->assertEquals('APPROVED', $cr->qa_verification_data['qa_1']['hu_approved']);
+
+        // 3. Operational Manager tries to approve OM -> Should succeed because HU is approved
+        $response = $this->actingAs($om)->post(route('change-requests.evaluate', $cr->id), [
+            'status' => 'IN REVIEW',
+            'qa_verification_data' => [
+                'qa_1' => [
+                    'submitted' => true,
+                    'hu_approved' => 'APPROVED',
+                    'om_approved' => 'APPROVED',
+                    'gm_approved' => 'PENDING',
+                ]
+            ]
+        ]);
+        $response->assertRedirect(route('change-requests.show', $cr->id));
+        $cr->refresh();
+        $this->assertEquals('APPROVED', $cr->qa_verification_data['qa_1']['om_approved']);
+
+        // 4. Try to bypass sequence: General Manager checks GM but OM is false/PENDING -> should fail validation
+        // Let's reset OM to PENDING first (as OM)
+        $this->actingAs($om)->post(route('change-requests.evaluate', $cr->id), [
+            'status' => 'IN REVIEW',
+            'qa_verification_data' => [
+                'qa_1' => [
+                    'submitted' => true,
+                    'hu_approved' => 'APPROVED',
+                    'om_approved' => 'PENDING',
+                    'gm_approved' => 'PENDING',
+                ]
+            ]
+        ]);
+        $cr->refresh();
+        $this->assertEquals('PENDING', $cr->qa_verification_data['qa_1']['om_approved']);
+
+        // Now GM tries to check GM (while OM is PENDING) -> should abort with 422
+        $response = $this->actingAs($gm)->post(route('change-requests.evaluate', $cr->id), [
+            'status' => 'IN REVIEW',
+            'qa_verification_data' => [
+                'qa_1' => [
+                    'submitted' => true,
+                    'hu_approved' => 'APPROVED',
+                    'om_approved' => 'PENDING',
+                    'gm_approved' => 'APPROVED',
+                ]
+            ]
+        ]);
+        $response->assertStatus(422); // Prerequisite fails
+    }
+
+    public function test_submission_is_restricted_to_qa_and_superadmin()
+    {
+        $initiator = User::factory()->create(['role' => 'initiator']);
+        $hu = User::factory()->create(['role' => 'head_of_quality']);
+        $qa = User::factory()->create(['role' => 'qa']);
+
+        $cr = \App\Models\ChangeRequest::create([
+            'cr_number' => 'CR/2026/0099',
+            'type' => 'CRA',
+            'sifat_perubahan' => 'Formula',
+            'department' => 'Produksi',
+            'status' => 'OPEN',
+            'initiator_id' => $initiator->id,
+            'qa_verification_data' => [
+                'qa_1' => [
+                    'submitted' => false,
+                    'hu_approved' => 'PENDING',
+                    'om_approved' => 'PENDING',
+                    'gm_approved' => 'PENDING',
+                ]
+            ]
+        ]);
+
+        // 1. Head of Quality (HU) tries to submit to management -> Should fail with 403
+        $response = $this->actingAs($hu)->post(route('change-requests.evaluate', $cr->id), [
+            'status' => 'IN REVIEW',
+            'qa_verification_data' => [
+                'qa_1' => [
+                    'submitted' => true,
+                    'hu_approved' => 'PENDING',
+                    'om_approved' => 'PENDING',
+                    'gm_approved' => 'PENDING',
+                ]
+            ]
+        ]);
+        $response->assertStatus(403);
+
+        // 2. QA Officer submits -> Should succeed
+        $response = $this->actingAs($qa)->post(route('change-requests.evaluate', $cr->id), [
+            'status' => 'IN REVIEW',
+            'qa_verification_data' => [
+                'qa_1' => [
+                    'submitted' => true,
+                    'hu_approved' => 'PENDING',
+                    'om_approved' => 'PENDING',
+                    'gm_approved' => 'PENDING',
+                ]
+            ]
+        ]);
+        $response->assertRedirect(route('change-requests.show', $cr->id));
+        $cr->refresh();
+        $this->assertTrue($cr->qa_verification_data['qa_1']['submitted']);
+    }
+
+    public function test_management_only_sees_submitted_change_requests_in_list()
+    {
+        $initiator = User::factory()->create(['role' => 'initiator']);
+        $hu = User::factory()->create(['role' => 'head_of_quality']);
+        $qa = User::factory()->create(['role' => 'qa']);
+
+        // CR 1: Not submitted yet
+        $crNotSubmitted = \App\Models\ChangeRequest::create([
+            'cr_number' => 'CR/2026/0881',
+            'type' => 'CRA',
+            'sifat_perubahan' => 'Formula',
+            'department' => 'Produksi',
+            'status' => 'OPEN',
+            'initiator_id' => $initiator->id,
+            'qa_verification_data' => [
+                'qa_1' => [
+                    'submitted' => false,
+                    'hu_approved' => 'PENDING',
+                ]
+            ]
+        ]);
+
+        // CR 2: Already submitted by QA
+        $crSubmitted = \App\Models\ChangeRequest::create([
+            'cr_number' => 'CR/2026/0882',
+            'type' => 'CRA',
+            'sifat_perubahan' => 'Formula',
+            'department' => 'Produksi',
+            'status' => 'IN REVIEW',
+            'initiator_id' => $initiator->id,
+            'qa_verification_data' => [
+                'qa_1' => [
+                    'submitted' => true,
+                    'hu_approved' => 'PENDING',
+                ]
+            ]
+        ]);
+
+        // HU views the listing page
+        $response = $this->actingAs($hu)->get(route('change-requests.index'));
+        $response->assertStatus(200);
+
+        // HU should NOT see CR 1 (not submitted), but should see CR 2 (submitted)
+        $response->assertInertia(fn ($page) => $page
+            ->has('changeRequests.data', 1)
+            ->where('changeRequests.data.0.cr_number', 'CR/2026/0882')
+        );
+
+        // QA views the listing page -> should see BOTH
+        $responseQa = $this->actingAs($qa)->get(route('change-requests.index'));
+        $responseQa->assertStatus(200);
+        $responseQa->assertInertia(fn ($page) => $page
+            ->has('changeRequests.data', 2)
+        );
+    }
+
+    public function test_automated_status_transitions()
+    {
+        $initiator = User::factory()->create(['role' => 'initiator']);
+        $hu = User::factory()->create(['role' => 'head_of_quality']);
+        $om = User::factory()->create(['role' => 'operational_manager']);
+        $gm = User::factory()->create(['role' => 'general_manager']);
+        $superadmin = User::factory()->create(['role' => 'superadmin']);
+
+        $cr = \App\Models\ChangeRequest::create([
+            'cr_number' => 'CR/2026/0003',
+            'type' => 'CRA',
+            'sifat_perubahan' => 'Formula',
+            'department' => 'Produksi',
+            'status' => 'OPEN',
+            'initiator_id' => $initiator->id,
+            'qa_verification_data' => [
+                'qa_1' => [
+                    'submitted' => true,
+                    'hu_approved' => 'PENDING',
+                    'om_approved' => 'PENDING',
+                    'gm_approved' => 'PENDING',
+                ],
+                'qa_3' => [
+                    'verifikasi_completed' => false,
+                ]
+            ]
+        ]);
+
+        // 1. GM approves Stage 1 (acting as superadmin) -> status transitions to 'IN PROGRESS'
+        $response = $this->actingAs($superadmin)->post(route('change-requests.evaluate', $cr->id), [
+            'status' => 'IN REVIEW',
+            'qa_verification_data' => [
+                'qa_1' => [
+                    'submitted' => true,
+                    'hu_approved' => 'APPROVED',
+                    'om_approved' => 'APPROVED',
+                    'gm_approved' => 'APPROVED',
+                ],
+                'qa_3' => [
+                    'verifikasi_completed' => false,
+                ]
+            ]
+        ]);
+        $response->assertRedirect(route('change-requests.show', $cr->id));
+        $cr->refresh();
+        $this->assertEquals('IN PROGRESS', $cr->status);
+
+        // 2. Stage 3 verification completed -> status transitions to 'COMPLETE'
+        $response = $this->actingAs($superadmin)->post(route('change-requests.evaluate', $cr->id), [
+            'status' => 'IN PROGRESS',
+            'qa_verification_data' => [
+                'qa_1' => [
+                    'submitted' => true,
+                    'hu_approved' => 'APPROVED',
+                    'om_approved' => 'APPROVED',
+                    'gm_approved' => 'APPROVED',
+                ],
+                'qa_3' => [
+                    'verifikasi_completed' => true,
+                ]
+            ]
+        ]);
+        $response->assertRedirect(route('change-requests.show', $cr->id));
+        $cr->refresh();
+        $this->assertEquals('COMPLETE', $cr->status);
+
+        // 3. GM unchecked/PENDING -> status rolls back to 'IN REVIEW'
+        $response = $this->actingAs($superadmin)->post(route('change-requests.evaluate', $cr->id), [
+            'status' => 'COMPLETE',
+            'qa_verification_data' => [
+                'qa_1' => [
+                    'submitted' => true,
+                    'hu_approved' => 'APPROVED',
+                    'om_approved' => 'APPROVED',
+                    'gm_approved' => 'PENDING',
+                ],
+                'qa_3' => [
+                    'verifikasi_completed' => true,
+                ]
+            ]
+        ]);
+        $response->assertRedirect(route('change-requests.show', $cr->id));
+        $cr->refresh();
+        $this->assertEquals('IN REVIEW', $cr->status);
     }
 
     public function test_deviation_approval_auto_generates_capa()
@@ -240,25 +630,35 @@ class QmsBusinessRulesTest extends TestCase
         $cr = \App\Models\ChangeRequest::create([
             'cr_number' => 'CR/2026/0001',
             'type' => 'CRB',
-            'sifat_perubahan' => 'Permanen',
             'department' => 'QA',
             'status' => 'REJECT',
             'initiator_id' => $initiator->id,
+            'awal_sebelum_perubahan' => 'Kondisi awal sebelum dirubah',
+            'usulan_perubahan' => 'Rencana usulan perubahan baru',
+            'alasan_perubahan' => 'Alasan dilakukannya perubahan',
+            'analisis_dampak' => 'Analisis dampak risiko kualitas',
         ]);
 
         // Resubmit the rejected CR
         $response = $this->actingAs($initiator)->post(route('change-requests.update', $cr->id), [
             'type' => 'CRB',
-            'sifat_perubahan' => 'Sementara',
             'department' => 'QC',
+            'awal_sebelum_perubahan' => 'Kondisi awal diubah',
+            'usulan_perubahan' => 'Rencana usulan perubahan diubah',
+            'alasan_perubahan' => 'Alasan dilakukannya perubahan diubah',
+            'analisis_dampak' => 'Analisis dampak risiko kualitas diubah',
             'submit_type' => 'submit',
         ]);
 
         $response->assertRedirect(route('change-requests.index'));
         $this->assertDatabaseHas('change_requests', [
             'id' => $cr->id,
-            'sifat_perubahan' => 'Sementara',
+            'sifat_perubahan' => null,
             'department' => 'QC',
+            'awal_sebelum_perubahan' => 'Kondisi awal diubah',
+            'usulan_perubahan' => 'Rencana usulan perubahan diubah',
+            'alasan_perubahan' => 'Alasan dilakukannya perubahan diubah',
+            'analisis_dampak' => 'Analisis dampak risiko kualitas diubah',
             'status' => 'OPEN', // Resubmitted!
         ]);
     }
@@ -280,6 +680,7 @@ class QmsBusinessRulesTest extends TestCase
         $response = $this->actingAs($initiator)->post(route('deviations.update', $deviation->id), [
             'department' => 'QA',
             'description' => 'Revised description with detail',
+            'submit_type' => 'submit',
         ]);
 
         $response->assertRedirect(route('deviations.index'));

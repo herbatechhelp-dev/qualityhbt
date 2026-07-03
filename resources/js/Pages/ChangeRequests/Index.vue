@@ -166,7 +166,7 @@ const getStatusClass = (status) => {
                         <tr>
                             <th>No CR</th>
                             <th>Jalur</th>
-                            <th>Sifat</th>
+                            <th>Jenis</th>
                             <th>Inisiator</th>
                             <th>PIC</th>
                             <th>Departemen</th>

@@ -30,6 +30,15 @@ class ChangeRequest extends Model
         'pic_id',
         'timeline',
         'hasil_verifikasi',
+        'awal_sebelum_perubahan',
+        'usulan_perubahan',
+        'alasan_perubahan',
+        'analisis_dampak',
+        'qa_verification_data',
+    ];
+
+    protected $casts = [
+        'qa_verification_data' => 'array',
     ];
 
     public function initiator()

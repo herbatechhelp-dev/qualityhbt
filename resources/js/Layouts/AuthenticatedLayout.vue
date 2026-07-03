@@ -95,8 +95,14 @@ const user = page.props.auth.user;
             <div style="padding: 24px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 8px;">
                 <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Logged in as:</div>
                 <div style="font-weight: 600; font-size: 0.9rem; color: var(--text-primary);">{{ user.name }}</div>
-                <span class="status-badge" :class="user.role === 'superadmin' ? 'badge-in_progress' : (user.role === 'qa' ? 'badge-approved' : 'badge-open')" style="width: fit-content; margin-top: 4px;">
-                    {{ user.role === 'superadmin' ? 'Super Admin' : (user.role === 'qa' ? 'QA / Reviewer' : 'Initiator') }}
+                <span class="status-badge" :class="user.role === 'superadmin' ? 'badge-in_progress' : (['qa', 'head_of_quality', 'operational_manager', 'general_manager'].includes(user.role) ? 'badge-approved' : 'badge-open')" style="width: fit-content; margin-top: 4px;">
+                    {{ 
+                        user.role === 'superadmin' ? 'Super Admin' : 
+                        (user.role === 'qa' ? 'QA / Reviewer' : 
+                        (user.role === 'head_of_quality' ? 'Head of Quality' : 
+                        (user.role === 'operational_manager' ? 'Operational Manager' : 
+                        (user.role === 'general_manager' ? 'General Manager' : 'Initiator')))) 
+                    }}
                 </span>
             </div>
         </aside>

@@ -21,6 +21,16 @@ class ChangeRequestController extends Controller
                 $q->where('initiator_id', $user->id)
                   ->orWhere('pic_id', $user->id);
             });
+        } elseif (in_array($user->role, ['head_of_quality', 'operational_manager', 'general_manager'])) {
+            // Management: lihat CR miliknya, di mana ia PIC, ATAU yang sudah diajukan oleh QA (submitted = true)
+            $query->where(function($q) use ($user) {
+                $q->where('initiator_id', $user->id)
+                  ->orWhere('pic_id', $user->id)
+                  ->orWhere(function($sub) {
+                      $sub->where('status', '!=', 'DRAFT')
+                          ->where('qa_verification_data->qa_1->submitted', true);
+                  });
+            });
         } else {
             // QA & superadmin: lihat semua CR kecuali DRAFT milik inisiator lain
             $query->where(function($q) use ($user) {
@@ -80,8 +90,11 @@ class ChangeRequestController extends Controller
     {
         $rules = [
             'type' => 'required|in:CRA,CRB',
-            'sifat_perubahan' => 'required|in:Permanen,Sementara',
             'department' => 'required|string|max:255',
+            'awal_sebelum_perubahan' => 'required|string',
+            'usulan_perubahan' => 'required|string',
+            'alasan_perubahan' => 'required|string',
+            'analisis_dampak' => 'required|string',
             'attachment' => 'nullable|file|max:10240', // 10MB
             'attachment_description' => 'nullable|string|max:255',
             'submit_type' => 'required|in:draft,submit',
@@ -89,22 +102,37 @@ class ChangeRequestController extends Controller
 
         if ($request->type === 'CRA') {
             $rules = array_merge($rules, [
-                'risk_identification' => 'required|string',
-                'potential_cause' => 'required|string',
+                'sifat_perubahan' => 'required|string|max:255',
+                'sifat_perubahan_custom' => 'required_if:sifat_perubahan,Lain - lain|nullable|string|max:255',
                 'severity' => 'required|integer|min:1|max:10',
                 'occurrence' => 'required|integer|min:1|max:10',
                 'detection' => 'required|integer|min:1|max:10',
-                'risk_control' => 'required|string',
-                'action' => 'required|string',
+            ]);
+        } else {
+            $rules = array_merge($rules, [
+                'sifat_perubahan' => 'nullable|string|max:255',
+                'sifat_perubahan_custom' => 'nullable|string|max:255',
             ]);
         }
 
         $validated = $request->validate($rules);
 
-        // Calculate RPN if CRA
+        // Calculate RPN, and prepare risk parameters
         $rpn = null;
+        $sifatPerubahan = null;
+        $severity = null;
+        $occurrence = null;
+        $detection = null;
+
         if ($request->type === 'CRA') {
             $rpn = intval($request->severity) * intval($request->occurrence) * intval($request->detection);
+            $sifatPerubahan = $request->sifat_perubahan;
+            if ($sifatPerubahan === 'Lain - lain') {
+                $sifatPerubahan = $request->sifat_perubahan_custom;
+            }
+            $severity = $request->severity;
+            $occurrence = $request->occurrence;
+            $detection = $request->detection;
         }
 
         // Generate cr_number
@@ -124,16 +152,16 @@ class ChangeRequestController extends Controller
         $cr = ChangeRequest::create([
             'cr_number' => $crNumber,
             'type' => $request->type,
-            'sifat_perubahan' => $request->sifat_perubahan,
+            'sifat_perubahan' => $sifatPerubahan,
             'department' => $request->department,
-            'risk_identification' => $request->risk_identification,
-            'potential_cause' => $request->potential_cause,
-            'severity' => $request->severity,
-            'occurrence' => $request->occurrence,
-            'detection' => $request->detection,
+            'severity' => $severity,
+            'occurrence' => $occurrence,
+            'detection' => $detection,
             'rpn' => $rpn,
-            'risk_control' => $request->risk_control,
-            'action' => $request->action,
+            'awal_sebelum_perubahan' => $request->awal_sebelum_perubahan,
+            'usulan_perubahan' => $request->usulan_perubahan,
+            'alasan_perubahan' => $request->alasan_perubahan,
+            'analisis_dampak' => $request->analisis_dampak,
             'attachment_path' => $attachmentPath,
             'attachment_description' => $request->attachment_description,
             'status' => $status,
@@ -165,8 +193,11 @@ class ChangeRequestController extends Controller
         if (in_array($changeRequest->status, ['DRAFT', 'REJECT']) && $changeRequest->initiator_id === $request->user()->id) {
             $rules = [
                 'type' => 'required|in:CRA,CRB',
-                'sifat_perubahan' => 'required|in:Permanen,Sementara',
                 'department' => 'required|string|max:255',
+                'awal_sebelum_perubahan' => 'required|string',
+                'usulan_perubahan' => 'required|string',
+                'alasan_perubahan' => 'required|string',
+                'analisis_dampak' => 'required|string',
                 'attachment' => 'nullable|file|max:10240',
                 'attachment_description' => 'nullable|string|max:255',
                 'submit_type' => 'required|in:draft,submit',
@@ -174,21 +205,37 @@ class ChangeRequestController extends Controller
 
             if ($request->type === 'CRA') {
                 $rules = array_merge($rules, [
-                    'risk_identification' => 'required|string',
-                    'potential_cause' => 'required|string',
+                    'sifat_perubahan' => 'required|string|max:255',
+                    'sifat_perubahan_custom' => 'required_if:sifat_perubahan,Lain - lain|nullable|string|max:255',
                     'severity' => 'required|integer|min:1|max:10',
                     'occurrence' => 'required|integer|min:1|max:10',
                     'detection' => 'required|integer|min:1|max:10',
-                    'risk_control' => 'required|string',
-                    'action' => 'required|string',
+                ]);
+            } else {
+                $rules = array_merge($rules, [
+                    'sifat_perubahan' => 'nullable|string|max:255',
+                    'sifat_perubahan_custom' => 'nullable|string|max:255',
                 ]);
             }
 
             $validated = $request->validate($rules);
 
+            // Calculate RPN, and prepare risk parameters
             $rpn = null;
+            $sifatPerubahan = null;
+            $severity = null;
+            $occurrence = null;
+            $detection = null;
+
             if ($request->type === 'CRA') {
                 $rpn = intval($request->severity) * intval($request->occurrence) * intval($request->detection);
+                $sifatPerubahan = $request->sifat_perubahan;
+                if ($sifatPerubahan === 'Lain - lain') {
+                    $sifatPerubahan = $request->sifat_perubahan_custom;
+                }
+                $severity = $request->severity;
+                $occurrence = $request->occurrence;
+                $detection = $request->detection;
             }
 
             if ($request->hasFile('attachment')) {
@@ -203,16 +250,16 @@ class ChangeRequestController extends Controller
 
             $changeRequest->update([
                 'type' => $request->type,
-                'sifat_perubahan' => $request->sifat_perubahan,
+                'sifat_perubahan' => $sifatPerubahan,
                 'department' => $request->department,
-                'risk_identification' => $request->risk_identification,
-                'potential_cause' => $request->potential_cause,
-                'severity' => $request->severity,
-                'occurrence' => $request->occurrence,
-                'detection' => $request->detection,
+                'severity' => $severity,
+                'occurrence' => $occurrence,
+                'detection' => $detection,
                 'rpn' => $rpn,
-                'risk_control' => $request->risk_control,
-                'action' => $request->action,
+                'awal_sebelum_perubahan' => $request->awal_sebelum_perubahan,
+                'usulan_perubahan' => $request->usulan_perubahan,
+                'alasan_perubahan' => $request->alasan_perubahan,
+                'analisis_dampak' => $request->analisis_dampak,
                 'attachment_description' => $request->attachment_description,
                 'status' => $status,
             ]);
@@ -225,25 +272,132 @@ class ChangeRequestController extends Controller
 
     public function evaluate(Request $request, ChangeRequest $changeRequest)
     {
-        // Only QA can evaluate
-        if (!in_array($request->user()->role, ['qa', 'superadmin'])) {
-            abort(403, 'Unauthorized. Only QA and Super Admin can evaluate Change Requests.');
+        // Only QA and management can evaluate
+        if (!$request->user()->isQaOrManagement()) {
+            abort(403, 'Unauthorized. Only QA and Management can evaluate Change Requests.');
         }
 
         $request->validate([
-            'rencana_tindakan' => 'required|string',
-            'pic_id' => 'required|exists:users,id',
-            'timeline' => 'required|date',
-            'hasil_verifikasi' => 'required|string',
+            'rencana_tindakan' => 'nullable|string',
+            'pic_id' => 'nullable|exists:users,id',
+            'timeline' => 'nullable|date',
+            'hasil_verifikasi' => 'nullable|string',
             'status' => 'required|in:IN REVIEW,APPROVED,IN PROGRESS,COMPLETE,REJECT',
+            'qa_verification_data' => 'nullable|array',
+            'qa_3_files.*' => 'nullable|file|max:10240',
         ]);
+
+        $verificationData = $request->input('qa_verification_data', []);
+
+        $user = $request->user();
+        $isSuperAdmin = $user->role === 'superadmin';
+
+        $oldData = $changeRequest->qa_verification_data ?? [];
+
+        $mapApprovalsBack = function ($data) {
+            if ($data === true || $data === 'APPROVED') return 'APPROVED';
+            if ($data === 'REJECTED') return 'REJECTED';
+            return 'PENDING';
+        };
+
+        $oldHu = $mapApprovalsBack($oldData['qa_1']['hu_approved'] ?? null);
+        $newHu = $mapApprovalsBack($verificationData['qa_1']['hu_approved'] ?? null);
+
+        $oldOm = $mapApprovalsBack($oldData['qa_1']['om_approved'] ?? null);
+        $newOm = $mapApprovalsBack($verificationData['qa_1']['om_approved'] ?? null);
+
+        $oldGm = $mapApprovalsBack($oldData['qa_1']['gm_approved'] ?? null);
+        $newGm = $mapApprovalsBack($verificationData['qa_1']['gm_approved'] ?? null);
+
+        $oldSubmitted = $oldData['qa_1']['submitted'] ?? false;
+        $newSubmitted = $verificationData['qa_1']['submitted'] ?? false;
+
+        if ($newSubmitted !== $oldSubmitted && !$isSuperAdmin && $user->role !== 'qa') {
+            abort(403, 'Hanya QA Officer yang dapat mengajukan persetujuan ke manajemen.');
+        }
+
+        // Sequential validation (in case bypassed via raw HTTP client)
+        if ($newOm === 'APPROVED' && $newHu !== 'APPROVED') {
+            abort(422, 'Persetujuan Operational Manager memerlukan persetujuan Head of Quality.');
+        }
+
+        if ($newGm === 'APPROVED' && $newOm !== 'APPROVED') {
+            abort(422, 'Persetujuan General Manager memerlukan persetujuan Operational Manager.');
+        }
+
+        // Reset cascading downwards if unchecked or not approved
+        if ($newHu !== 'APPROVED') {
+            $newOm = 'PENDING';
+            $newGm = 'PENDING';
+            if (isset($verificationData['qa_1'])) {
+                $verificationData['qa_1']['om_approved'] = 'PENDING';
+                $verificationData['qa_1']['gm_approved'] = 'PENDING';
+            }
+        }
+        if ($newOm !== 'APPROVED') {
+            $newGm = 'PENDING';
+            if (isset($verificationData['qa_1'])) {
+                $verificationData['qa_1']['gm_approved'] = 'PENDING';
+            }
+        }
+
+        // Role-based security validation
+        if ($newHu !== $oldHu && !$isSuperAdmin && $user->role !== 'head_of_quality') {
+            abort(403, 'Hanya Head of Quality yang dapat mengubah persetujuan HU.');
+        }
+
+        if ($newOm !== $oldOm && !$isSuperAdmin && $user->role !== 'operational_manager') {
+            abort(403, 'Hanya Operational Manager yang dapat mengubah persetujuan OM.');
+        }
+
+        if ($newGm !== $oldGm && !$isSuperAdmin && $user->role !== 'general_manager') {
+            abort(403, 'Hanya General Manager yang dapat mengubah persetujuan GM.');
+        }
+
+        // Process attachments in qa_3 if any
+        if ($request->hasFile('qa_3_files')) {
+            $files = $request->file('qa_3_files');
+            foreach ($files as $index => $file) {
+                if ($file) {
+                    $path = $file->store('attachments/qa', 'public');
+                    // Inject into JSON data
+                    $verificationData['qa_3']['implementations'][$index]['bukti_dokumen_path'] = $path;
+                }
+            }
+        }
+
+        // Automated status transition logic
+        $status = $request->status;
+
+        if ($status !== 'REJECT') {
+            if ($newHu === 'REJECTED' || $newOm === 'REJECTED' || $newGm === 'REJECTED') {
+                $status = 'REJECT';
+            } elseif ($newGm === 'APPROVED') {
+                // If GM approved Stage 1, automatically set to IN PROGRESS if currently OPEN or IN REVIEW
+                if (in_array($changeRequest->status, ['OPEN', 'IN REVIEW'])) {
+                    $status = 'IN PROGRESS';
+                }
+            } else {
+                // If GM is not approved, it must not be IN PROGRESS or COMPLETE
+                if (in_array($changeRequest->status, ['IN PROGRESS', 'COMPLETE'])) {
+                    $status = 'IN REVIEW';
+                }
+            }
+
+            // If Stage 3 completed and GM is approved
+            $verifikasiCompleted = $verificationData['qa_3']['verifikasi_completed'] ?? false;
+            if ($verifikasiCompleted && $newGm === 'APPROVED') {
+                $status = 'COMPLETE';
+            }
+        }
 
         $changeRequest->update([
             'rencana_tindakan' => $request->rencana_tindakan,
-            'pic_id' => $request->pic_id,
+            'pic_id' => $request->pic_id ? intval($request->pic_id) : null,
             'timeline' => $request->timeline,
             'hasil_verifikasi' => $request->hasil_verifikasi,
-            'status' => $request->status,
+            'status' => $status,
+            'qa_verification_data' => $verificationData,
         ]);
 
         return redirect()->route('change-requests.show', $changeRequest->id)->with('success', 'Change Request evaluation updated!');

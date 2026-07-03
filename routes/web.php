@@ -134,6 +134,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/deviations/create', [DeviationController::class, 'create'])->name('deviations.create');
     Route::post('/deviations', [DeviationController::class, 'store'])->name('deviations.store');
     Route::get('/deviations/{deviation}', [DeviationController::class, 'show'])->name('deviations.show');
+    Route::get('/deviations/{deviation}/edit', [DeviationController::class, 'edit'])->name('deviations.edit');
     Route::post('/deviations/{deviation}', [DeviationController::class, 'update'])->name('deviations.update');
     Route::post('/deviations/{deviation}/decide', [DeviationController::class, 'decide'])->name('deviations.decide');
 

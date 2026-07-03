@@ -7,6 +7,7 @@ const page = usePage();
 const currentUser = page.props.auth.user;
 
 const props = defineProps({
+    deviation: { type: Object, required: true },
     users: { type: Array, default: () => [] },
 });
 
@@ -60,21 +61,16 @@ const sodGuide = {
 
 // ─── Form state ──────────────────────────────────────────────────────────────
 const form = useForm({
-    // Section A
-    department:    '',
-    pic:           '',
-    tanggal_temuan: new Date().toISOString().slice(0, 10),
-    description:   '',
-    // Section B
-    jenis_penyimpangan:        [],
-    identifikasi_penyimpangan: [],
-    kepala_departemen:          '',
-    // Section C — multiple attachments
-    new_attachments:              [],
-    new_attachment_descriptions:  [],
-    // Section D — risk analysis rows
-    risk_analysis: [],
-    // submit
+    department: props.deviation.department || '',
+    pic: props.deviation.pic || '',
+    tanggal_temuan: props.deviation.tanggal_temuan || '',
+    description: props.deviation.description || '',
+    jenis_penyimpangan: props.deviation.jenis_penyimpangan || [],
+    identifikasi_penyimpangan: props.deviation.identifikasi_penyimpangan || [],
+    kepala_departemen: props.deviation.kepala_departemen || '',
+    new_attachments: [],
+    new_attachment_descriptions: [],
+    risk_analysis: props.deviation.risk_analysis || [],
     submit_type: 'submit',
 });
 
@@ -130,68 +126,28 @@ const submitForm = (submitType) => {
     form.new_attachments = attachmentFiles.value;
     form.new_attachment_descriptions = attachmentDescs.value;
 
-    form.post(route('deviations.store'), {
+    form.post(route('deviations.update', props.deviation.id), {
         forceFormData: true,
     });
 };
 </script>
 
 <template>
-    <Head title="Laporkan Deviasi - QMS" />
+    <Head :title="'Edit Deviasi: ' + deviation.deviation_number + ' - QMS'" />
 
     <AuthenticatedLayout>
-        <template #header>➕ Laporkan Deviasi Baru</template>
+        <template #header>✍️ Edit &amp; Revisi Laporan Deviasi</template>
 
         <div style="max-width: 960px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px;">
-            <div>
-                <Link :href="route('deviations.index')" class="btn btn-secondary">
-                    ← Kembali ke Logbook
+            <div class="flex-between">
+                <Link :href="route('deviations.show', deviation.id)" class="btn btn-secondary">
+                    ← Kembali ke Detail
                 </Link>
+                <div v-if="deviation.status === 'REJECTED'"
+                    style="font-size: 0.85rem; color: #ef4444; font-weight: bold; background: rgba(239,68,68,0.08); padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(239,68,68,0.3);">
+                    ⚠️ Laporan ini ditolak oleh QA. Alasan: "{{ deviation.reject_reason || '-' }}"
+                </div>
             </div>
-
-            <!-- SOD Guide Modal -->
-            <Teleport to="body">
-                <Transition name="fade">
-                    <div v-if="showSodGuide" @click.self="showSodGuide = false"
-                        style="position:fixed;inset:0;background:rgba(15,23,42,0.75);display:flex;align-items:center;justify-content:center;z-index:10000;backdrop-filter:blur(8px);">
-                        <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:16px;width:92%;max-width:800px;max-height:88vh;overflow:auto;padding:28px;box-shadow:var(--hover-shadow);">
-                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-                                <h3 style="font-size:1.15rem;font-weight:800;color:var(--text-primary);margin:0;">📊 Panduan Penilaian SOD (Severity · Occurrence · Detection)</h3>
-                                <button type="button" @click="showSodGuide = false" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text-muted);">&times;</button>
-                            </div>
-
-                            <div style="display:flex;flex-direction:column;gap:20px;">
-                                <div v-for="(rows, key) in sodGuide" :key="key">
-                                    <h4 style="font-weight:700;color:var(--accent-color);text-transform:capitalize;margin-bottom:10px;">
-                                        {{ key === 'severity' ? '5.4.1 Tingkat Keparahan (Severity)' : key === 'occurrence' ? '5.4.2 Potensi Kejadian (Occurrence)' : '5.4.3 Tingkat Deteksi Risiko (Detectability)' }}
-                                    </h4>
-                                    <table class="qms-table" style="width:100%;">
-                                        <thead>
-                                            <tr>
-                                                <th style="width:90px;">Tingkat</th>
-                                                <th style="width:80px;">Nilai</th>
-                                                <th>Kondisi / Kriteria</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr v-for="row in rows" :key="row.level">
-                                                <td style="font-weight:600;">{{ row.level }}</td>
-                                                <td><span class="status-badge" :class="row.nilai.startsWith('7') ? 'badge-reject' : row.nilai.startsWith('4') ? 'badge-in_review' : 'badge-approved'">{{ row.nilai }}</span></td>
-                                                <td style="font-size:0.85rem;line-height:1.5;">{{ row.kondisi }}</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <div style="margin-top:20px;padding:12px 16px;background:var(--bg-primary);border-radius:8px;border:1px solid var(--border-color);font-size:0.85rem;color:var(--text-muted);">
-                                <strong>RPN = Severity × Occurrence × Detection</strong><br>
-                                RPN ≤ 50: Rendah (hijau) &nbsp;|&nbsp; 51–200: Sedang (kuning) &nbsp;|&nbsp; &gt;200: Tinggi (merah)
-                            </div>
-                        </div>
-                    </div>
-                </Transition>
-            </Teleport>
 
             <form @submit.prevent style="display:contents;">
 
@@ -205,7 +161,7 @@ const submitForm = (submitType) => {
                     <div class="grid-2" style="margin-bottom:16px;">
                         <div class="form-group" style="margin-bottom:0;">
                             <label class="form-label">Inisiator (Pelapor)</label>
-                            <input type="text" :value="currentUser.name" class="form-input" disabled
+                            <input type="text" :value="deviation.initiator?.name || currentUser.name" class="form-input" disabled
                                 style="opacity:0.6;cursor:not-allowed;" />
                         </div>
                         <div class="form-group" style="margin-bottom:0;">
@@ -286,11 +242,11 @@ const submitForm = (submitType) => {
                     </div>
                 </div>
 
-                <!-- ─── SECTION C: Lampiran (Multi-file) ─────────────────────── -->
+                <!-- Existing & New Attachments -->
                 <div class="qms-card">
                     <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border-color);padding-bottom:12px;margin-bottom:20px;">
                         <h3 style="font-size:1.1rem;font-weight:800;color:var(--accent-color);margin:0;">
-                            C. Upload File Lampiran
+                            C. File Lampiran
                         </h3>
                         <button type="button" @click="addAttachmentRow" class="btn btn-secondary"
                             style="padding:6px 14px;font-size:0.8rem;font-weight:600;">
@@ -298,14 +254,35 @@ const submitForm = (submitType) => {
                         </button>
                     </div>
 
-                    <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:14px;">
-                        Unggah bukti penyimpangan (foto, laporan), investigasi (fish bone diagram), atau dokumen pendukung lainnya. Maks. 10 MB per file.
+                    <!-- Existing attachments display -->
+                    <div v-if="deviation.attachments && deviation.attachments.length" style="margin-bottom: 20px;">
+                        <label class="form-label">Lampiran Saat Ini</label>
+                        <div style="display:flex;flex-direction:column;gap:8px;">
+                            <div v-for="(att, idx) in deviation.attachments" :key="idx"
+                                style="display:flex;align-items:center;justify-content:space-between;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:8px;padding:8px 12px;font-size:0.85rem;">
+                                <span style="font-weight:600;color:var(--text-primary);">
+                                    {{ att.description || 'Lampiran ' + (idx + 1) }}
+                                </span>
+                                <span style="font-size:0.75rem;color:var(--text-muted);">
+                                    {{ att.path }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else-if="deviation.attachment_path" style="margin-bottom: 20px;">
+                        <label class="form-label">Lampiran Saat Ini</label>
+                        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:8px;padding:8px 12px;font-size:0.85rem;">
+                            <span style="font-weight:600;color:var(--text-primary);">
+                                {{ deviation.attachment_description || 'Berkas Bukti' }}
+                            </span>
+                            <span style="font-size:0.75rem;color:var(--text-muted);">
+                                {{ deviation.attachment_path }}
+                            </span>
+                        </div>
                     </div>
 
-                    <!-- Empty state -->
-                    <div v-if="attachmentFiles.length === 0"
-                        style="text-align:center;color:var(--text-muted);font-size:0.85rem;padding:24px;background:var(--bg-primary);border:1px dashed var(--border-color);border-radius:8px;">
-                        📂 Belum ada lampiran. Klik "+ Tambah File" untuk mengunggah.
+                    <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:14px;">
+                        Unggah bukti penyimpangan tambahan (foto, laporan), investigasi (fish bone diagram), atau dokumen pendukung lainnya. Maks. 10 MB per file.
                     </div>
 
                     <!-- Attachment rows -->
@@ -431,16 +408,15 @@ const submitForm = (submitType) => {
                     <button type="button" @click="submitForm('draft')" class="btn btn-secondary"
                         :disabled="form.processing"
                         style="padding:10px 24px;font-weight:700;font-size:0.95rem;">
-                        📁 Save as Draft
+                        📁 Simpan Draf
                     </button>
                     <div style="font-size:0.8rem;color:var(--text-muted);text-align:center;max-width:320px;line-height:1.4;">
-                        Draft tidak akan muncul di admin.<br>
-                        Nomor Deviasi baru dibuat saat <strong>Submit</strong>.
+                        Nomor Deviasi permanen akan didapatkan ketika <strong>Kirim &amp; Ajukan</strong>.
                     </div>
                     <button type="button" @click="submitForm('submit')" class="btn btn-primary"
                         :disabled="form.processing"
                         style="padding:10px 24px;font-weight:700;font-size:0.95rem;">
-                        🚀 Kirim Laporan Deviasi
+                        🚀 Kirim &amp; Ajukan Laporan
                     </button>
                 </div>
 

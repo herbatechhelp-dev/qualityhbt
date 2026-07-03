@@ -8,6 +8,29 @@ const props = defineProps({
     filters: Object,
 });
 
+const getRoleDisplayName = (role) => {
+    switch (role) {
+        case 'superadmin': return 'Super Admin';
+        case 'qa': return 'QA Officer';
+        case 'head_of_quality': return 'Head of Quality';
+        case 'operational_manager': return 'Operational Manager';
+        case 'general_manager': return 'General Manager';
+        case 'initiator': return 'Initiator';
+        default: return role;
+    }
+};
+
+const getRoleBadgeClass = (role) => {
+    switch (role) {
+        case 'superadmin': return 'badge-in_progress';
+        case 'qa': return 'badge-approved';
+        case 'head_of_quality': return 'badge-draft';
+        case 'operational_manager': return 'badge-in_review';
+        case 'general_manager': return 'badge-complete';
+        default: return 'badge-open';
+    }
+};
+
 const search = ref(props.filters.search || '');
 const showModal = ref(false);
 const isEditMode = ref(false);
@@ -132,8 +155,8 @@ const deleteUser = (user) => {
                             <td style="font-weight: 600; color: var(--text-primary);">{{ user.name }}</td>
                             <td>{{ user.email }}</td>
                             <td>
-                                <span class="status-badge" :class="user.role === 'superadmin' ? 'badge-in_progress' : (user.role === 'qa' ? 'badge-approved' : 'badge-open')">
-                                    {{ user.role === 'superadmin' ? 'Super Admin' : (user.role === 'qa' ? 'QA / Reviewer' : 'Initiator') }}
+                                <span class="status-badge" :class="getRoleBadgeClass(user.role)">
+                                    {{ getRoleDisplayName(user.role) }}
                                 </span>
                             </td>
                             <td>{{ new Date(user.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }) }}</td>
@@ -210,7 +233,10 @@ const deleteUser = (user) => {
                                 <label class="form-label">Role Pengguna</label>
                                 <select class="form-select" v-model="form.role">
                                     <option value="initiator">Initiator</option>
-                                    <option value="qa">QA / Reviewer</option>
+                                    <option value="qa">QA Officer</option>
+                                    <option value="head_of_quality">Head of Quality (HU)</option>
+                                    <option value="operational_manager">Operational Manager (OM)</option>
+                                    <option value="general_manager">General Manager (GM)</option>
                                     <option value="superadmin">Super Admin</option>
                                 </select>
                                 <div v-if="form.errors.role" style="color: #ef4444; font-size: 0.8rem; margin-top: 4px;">{{ form.errors.role }}</div>

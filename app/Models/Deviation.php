@@ -12,12 +12,27 @@ class Deviation extends Model
     protected $fillable = [
         'deviation_number',
         'department',
+        'pic',
+        'tanggal_temuan',
         'description',
+        'jenis_penyimpangan',
+        'identifikasi_penyimpangan',
+        'kepala_departemen',
         'attachment_path',
         'attachment_description',
+        'attachments',
+        'risk_analysis',
         'status',
         'initiator_id',
         'reject_reason',
+    ];
+
+    protected $casts = [
+        'jenis_penyimpangan'       => 'array',
+        'identifikasi_penyimpangan' => 'array',
+        'attachments'              => 'array',
+        'risk_analysis'            => 'array',
+        'tanggal_temuan'           => 'date',
     ];
 
     public function initiator()

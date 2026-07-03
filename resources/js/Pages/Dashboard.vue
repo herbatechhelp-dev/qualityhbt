@@ -217,7 +217,7 @@ const getStatusBadgeClass = (status) => {
                                         <th>No CR</th>
                                         <th>Inisiator</th>
                                         <th>Tipe</th>
-                                        <th>Sifat</th>
+                                        <th>Jenis</th>
                                         <th>Departemen</th>
                                         <th>Status</th>
                                         <th>Aksi</th>

@@ -37,9 +37,9 @@ class DocumentController extends Controller
 
     public function import(Request $request)
     {
-        // Only QA or Super Admin can import
-        if (!in_array($request->user()->role, ['qa', 'superadmin'])) {
-            abort(403, 'Unauthorized. Only QA and Super Admin can import documents.');
+        // Only QA or Management can import
+        if (!$request->user()->isQaOrManagement()) {
+            abort(403, 'Unauthorized. Only QA and Management can import documents.');
         }
 
         $request->validate([
@@ -202,9 +202,9 @@ class DocumentController extends Controller
 
     public function syncSheets(Request $request)
     {
-        // Only QA or Super Admin can sync
-        if (!in_array($request->user()->role, ['qa', 'superadmin'])) {
-            abort(403, 'Unauthorized. Only QA and Super Admin can sync documents.');
+        // Only QA or Management can sync
+        if (!$request->user()->isQaOrManagement()) {
+            abort(403, 'Unauthorized. Only QA and Management can sync documents.');
         }
 
         $request->validate([

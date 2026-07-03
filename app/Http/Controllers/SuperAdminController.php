@@ -46,7 +46,7 @@ class SuperAdminController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
-            'role' => 'required|string|in:initiator,qa,superadmin',
+            'role' => 'required|string|in:initiator,qa,head_of_quality,operational_manager,general_manager,superadmin',
         ]);
 
         User::create([
@@ -65,7 +65,7 @@ class SuperAdminController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8',
-            'role' => 'required|string|in:initiator,qa,superadmin',
+            'role' => 'required|string|in:initiator,qa,head_of_quality,operational_manager,general_manager,superadmin',
         ]);
 
         $userData = [

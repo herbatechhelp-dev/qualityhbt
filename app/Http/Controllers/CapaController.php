@@ -98,8 +98,8 @@ class CapaController extends Controller
             return redirect()->back()->withErrors(['error' => 'Bukti hanya dapat diunggah saat CAPA berstatus IN PROGRESS.']);
         }
 
-        // Hanya PIC, Initiator, QA, atau Superadmin yang boleh upload bukti
-        $isAuthorized = in_array($user->role, ['qa', 'superadmin'])
+        // Hanya PIC, Initiator, atau QA/Management yang boleh upload bukti
+        $isAuthorized = $user->isQaOrManagement()
             || $capa->initiator_id === $user->id
             || $capa->pic_id === $user->id;
 
@@ -130,9 +130,9 @@ class CapaController extends Controller
 
     public function verify(Request $request, Capa $capa)
     {
-        // Only QA can verify
-        if (!in_array($request->user()->role, ['qa', 'superadmin'])) {
-            abort(403, 'Unauthorized. Only QA and Super Admin can verify CAPA.');
+        // Only QA/Management can verify
+        if (!$request->user()->isQaOrManagement()) {
+            abort(403, 'Unauthorized. Only QA and Management can verify CAPA.');
         }
 
         if ($capa->status !== 'APPROVED') {

@@ -43,4 +43,9 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function isQaOrManagement()
+    {
+        return in_array($this->role, ['qa', 'superadmin', 'head_of_quality', 'operational_manager', 'general_manager']);
+    }
 }

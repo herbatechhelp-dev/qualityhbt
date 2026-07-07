@@ -302,4 +302,46 @@ class DeviationController extends Controller
 
         return redirect()->route('deviations.show', $deviation->id)->with('success', 'Deviation status updated.');
     }
+
+    public function printDr(Deviation $deviation)
+    {
+        $user = auth()->user();
+        if ($user->role === 'initiator' && $deviation->initiator_id !== $user->id) {
+            abort(403, 'Unauthorized.');
+        }
+
+        $deviation->load(['initiator', 'capa']);
+
+        $hu = \App\Models\User::where('role', 'head_of_quality')->first();
+        $om = \App\Models\User::where('role', 'operational_manager')->first();
+        $gm = \App\Models\User::where('role', 'general_manager')->first();
+
+        return view('deviations.print-dr', [
+            'deviation' => $deviation,
+            'huUser' => $hu,
+            'omUser' => $om,
+            'gmUser' => $gm
+        ]);
+    }
+
+    public function printInvestigation(Deviation $deviation)
+    {
+        $user = auth()->user();
+        if ($user->role === 'initiator' && $deviation->initiator_id !== $user->id) {
+            abort(403, 'Unauthorized.');
+        }
+
+        $deviation->load(['initiator', 'capa']);
+
+        $hu = \App\Models\User::where('role', 'head_of_quality')->first();
+        $om = \App\Models\User::where('role', 'operational_manager')->first();
+        $gm = \App\Models\User::where('role', 'general_manager')->first();
+
+        return view('deviations.print-investigation', [
+            'deviation' => $deviation,
+            'huUser' => $hu,
+            'omUser' => $om,
+            'gmUser' => $gm
+        ]);
+    }
 }

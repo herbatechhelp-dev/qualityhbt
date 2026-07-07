@@ -403,6 +403,29 @@ class ChangeRequestController extends Controller
         return redirect()->route('change-requests.show', $changeRequest->id)->with('success', 'Change Request evaluation updated!');
     }
 
+    public function print(ChangeRequest $changeRequest)
+    {
+        $user = auth()->user();
+        if ($user->role === 'initiator' && $changeRequest->initiator_id !== $user->id && $changeRequest->pic_id !== $user->id) {
+            abort(403, 'Unauthorized.');
+        }
+
+        $changeRequest->load(['initiator', 'pic']);
+        
+        $viewName = $changeRequest->type === 'CRA' ? 'change-requests.print-cra' : 'change-requests.print-crb';
+        
+        $hu = \App\Models\User::where('role', 'head_of_quality')->first();
+        $om = \App\Models\User::where('role', 'operational_manager')->first();
+        $gm = \App\Models\User::where('role', 'general_manager')->first();
+        
+        return view($viewName, [
+            'changeRequest' => $changeRequest,
+            'huUser' => $hu,
+            'omUser' => $om,
+            'gmUser' => $gm
+        ]);
+    }
+
     public function destroyAttachment(ChangeRequest $changeRequest)
     {
         // Only before submit (DRAFT)

@@ -112,6 +112,8 @@ Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/signature', [ProfileController::class, 'updateSignature'])->name('profile.signature.update');
+    Route::delete('/profile/signature', [ProfileController::class, 'destroySignature'])->name('profile.signature.destroy');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Master list routes
@@ -127,6 +129,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/change-requests/{changeRequest}', [ChangeRequestController::class, 'show'])->name('change-requests.show');
     Route::post('/change-requests/{changeRequest}', [ChangeRequestController::class, 'update'])->name('change-requests.update');
     Route::post('/change-requests/{changeRequest}/evaluate', [ChangeRequestController::class, 'evaluate'])->name('change-requests.evaluate');
+    Route::get('/change-requests/{changeRequest}/print', [ChangeRequestController::class, 'print'])->name('change-requests.print');
     Route::delete('/change-requests/{changeRequest}/attachment', [ChangeRequestController::class, 'destroyAttachment'])->name('change-requests.destroy-attachment');
 
     // Deviation routes
@@ -137,6 +140,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/deviations/{deviation}/edit', [DeviationController::class, 'edit'])->name('deviations.edit');
     Route::post('/deviations/{deviation}', [DeviationController::class, 'update'])->name('deviations.update');
     Route::post('/deviations/{deviation}/decide', [DeviationController::class, 'decide'])->name('deviations.decide');
+    Route::get('/deviations/{deviation}/print-dr', [DeviationController::class, 'printDr'])->name('deviations.print-dr');
+    Route::get('/deviations/{deviation}/print-investigation', [DeviationController::class, 'printInvestigation'])->name('deviations.print-investigation');
 
     // CAPA routes
     Route::get('/capas', [CapaController::class, 'index'])->name('capas.index');

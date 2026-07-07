@@ -52,12 +52,51 @@ class ProfileController extends Controller
         $user = $request->user();
 
         Auth::logout();
-
+ 
         $user->delete();
-
+ 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-
+ 
         return Redirect::to('/');
+    }
+
+    /**
+     * Update the user's signature file.
+     */
+    public function updateSignature(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'signature' => 'required|image|max:2048', // max 2MB
+        ]);
+
+        $user = $request->user();
+
+        if ($request->hasFile('signature')) {
+            if ($user->signature_path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($user->signature_path);
+            }
+            $path = $request->file('signature')->store('signatures', 'public');
+            $user->update([
+                'signature_path' => $path
+            ]);
+        }
+
+        return Redirect::route('profile.edit')->with('status', 'signature-updated');
+    }
+
+    /**
+     * Delete the user's signature file.
+     */
+    public function destroySignature(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        if ($user->signature_path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($user->signature_path);
+            $user->update([
+                'signature_path' => null
+            ]);
+        }
+        return Redirect::route('profile.edit')->with('status', 'signature-deleted');
     }
 }

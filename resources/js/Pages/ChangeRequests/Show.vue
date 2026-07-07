@@ -5,6 +5,27 @@ import { ref, computed, watch } from 'vue';
 import AttachmentViewer from '@/Components/AttachmentViewer.vue';
 
 const showAttachment = ref(false);
+const showPrintPreview = ref(false);
+
+const printIframe = () => {
+    const iframe = document.getElementById('print-iframe');
+    if (iframe) {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+    }
+};
+
+watch(
+    () => showPrintPreview.value,
+    (newVal) => {
+        if (newVal) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+    }
+);
+
 const activeQaTab = ref('qa_1');
 
 const page = usePage();
@@ -277,9 +298,14 @@ const getStatusClass = (status) => {
 
         <div style="max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px;">
             <div class="flex-between">
-                <Link :href="route('change-requests.index')" class="btn btn-secondary">
-                    ← Kembali ke Logbook
-                </Link>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <Link :href="route('change-requests.index')" class="btn btn-secondary">
+                        ← Kembali ke Logbook
+                    </Link>
+                    <button type="button" @click="showPrintPreview = true" class="btn btn-secondary" style="background-color: #3b82f6; border-color: #3b82f6; color: white; display: inline-flex; align-items: center; gap: 6px;">
+                        🖨️ Cetak / Download Form
+                    </button>
+                </div>
                 <div v-if="(changeRequest.status === 'DRAFT' || changeRequest.status === 'REJECT') && $page.props.auth.user.id === changeRequest.initiator_id">
                     <button @click="toggleEditDraft" class="btn btn-primary">
                         {{ isEditingDraft ? 'Batal Edit' : (changeRequest.status === 'REJECT' ? '✍️ Edit & Revisi' : '✍️ Edit Draf') }}
@@ -1162,5 +1188,52 @@ const getStatusClass = (status) => {
             :title="changeRequest.attachment_description || 'Lampiran Usulan Perubahan (CR)'" 
             @close="showAttachment = false" 
         />
+
+        <!-- Print Preview Popup Modal -->
+        <Teleport to="body">
+            <Transition name="fade">
+                <div v-if="showPrintPreview" style="position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.75); display: flex; align-items: center; justify-content: center; z-index: 10000; backdrop-filter: blur(10px);" @click.self="showPrintPreview = false">
+                    <div class="scale-up-anim" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 20px; width: 92%; max-width: 950px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--hover-shadow); overflow: hidden; position: relative;">
+                        <!-- Header -->
+                        <div class="flex-between" style="border-bottom: 1px solid var(--border-color); padding: 20px 28px; background-color: rgba(15, 23, 42, 0.02); gap: 16px;">
+                            <div style="display: flex; flex-direction: column; gap: 4px; text-align: left;">
+                                <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; font-family: var(--font-outfit);">
+                                    🖨️ Pratinjau Formulir Change Request ({{ changeRequest.type }})
+                                </h3>
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">
+                                    No. Pengendalian: {{ changeRequest.cr_number }}
+                                </span>
+                            </div>
+                            
+                            <div style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
+                                <button @click="printIframe" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 6px; border-radius: 8px;">
+                                    🖨️ Cetak / Simpan PDF
+                                </button>
+                                <button @click="showPrintPreview = false" style="background: rgba(15, 23, 42, 0.05); border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.backgroundColor='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444';" onmouseout="this.style.backgroundColor='rgba(15, 23, 42, 0.05)'; this.style.color='var(--text-secondary)';">&times;</button>
+                            </div>
+                        </div>
+
+                        <!-- Content -->
+                        <div style="flex: 1; padding: 20px; background-color: var(--bg-primary); display: flex; justify-content: center;">
+                            <iframe 
+                                id="print-iframe" 
+                                :src="route('change-requests.print', changeRequest.id)" 
+                                style="width: 100%; height: 60vh; border: none; border-radius: 8px; background-color: #fff;"
+                            ></iframe>
+                        </div>
+
+                        <!-- Footer -->
+                        <div style="border-top: 1px solid var(--border-color); padding: 16px 28px; display: flex; justify-content: flex-end; background-color: rgba(15, 23, 42, 0.02); gap: 12px;">
+                            <button @click="showPrintPreview = false" class="btn btn-secondary" style="padding: 10px 24px; font-weight: 600; border-radius: 8px;">
+                                Tutup
+                            </button>
+                            <button @click="printIframe" class="btn btn-primary" style="padding: 10px 24px; font-weight: 600; border-radius: 8px;">
+                                Cetak
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
     </AuthenticatedLayout>
 </template>

@@ -105,6 +105,10 @@ class SuperAdminController extends Controller
                 'app_favicon_path' => Setting::getValue('app_favicon_path'),
                 'google_spreadsheet_id' => Setting::getValue('google_spreadsheet_id', env('GOOGLE_SPREADSHEET_ID')),
                 'google_service_account_json' => Setting::getValue('google_service_account_json', env('GOOGLE_SERVICE_ACCOUNT_JSON')),
+                // Print specific configurations
+                'print_company_name' => Setting::getValue('print_company_name', 'HERBATECH'),
+                'print_logo_type' => Setting::getValue('print_logo_type', 'text'),
+                'print_logo_path' => Setting::getValue('print_logo_path'),
             ]
         ]);
     }
@@ -119,6 +123,10 @@ class SuperAdminController extends Controller
             'app_favicon_image' => 'nullable|image|mimes:png,jpg,jpeg,ico,svg|max:512',
             'google_spreadsheet_id' => 'nullable|string|max:255',
             'google_service_account_json' => 'nullable|string',
+            // Print validations
+            'print_company_name' => 'required|string|max:255',
+            'print_logo_type' => 'required|string|in:text,image',
+            'print_logo_image' => 'nullable|image|max:2048',
         ]);
 
         Setting::setValue('app_name', $request->app_name);
@@ -150,6 +158,24 @@ class SuperAdminController extends Controller
             // Store new favicon file
             $faviconPath = $request->file('app_favicon_image')->store('favicons', 'public');
             Setting::setValue('app_favicon_path', $faviconPath);
+        }
+
+        // Handle Print specific logo/text settings
+        Setting::setValue('print_company_name', $request->print_company_name);
+        Setting::setValue('print_logo_type', $request->print_logo_type);
+
+        if ($request->print_logo_type === 'image') {
+            if ($request->hasFile('print_logo_image')) {
+                // Delete old print logo file if exists
+                $oldPrintPath = Setting::getValue('print_logo_path');
+                if ($oldPrintPath && Storage::disk('public')->exists($oldPrintPath)) {
+                    Storage::disk('public')->delete($oldPrintPath);
+                }
+
+                // Store new print logo file
+                $printPath = $request->file('print_logo_image')->store('logos', 'public');
+                Setting::setValue('print_logo_path', $printPath);
+            }
         }
 
         Setting::setValue('google_spreadsheet_id', $request->google_spreadsheet_id);

@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 @php
-    $logoType = \App\Models\Setting::getValue('app_logo_type', 'text');
-    $logoText = \App\Models\Setting::getValue('app_name', 'HERBATECH');
-    $logoPath = \App\Models\Setting::getValue('app_logo_path');
+    $logoType = \App\Models\Setting::getValue('print_logo_type', 'text');
+    $logoText = \App\Models\Setting::getValue('print_company_name', 'HERBATECH');
+    $logoPath = \App\Models\Setting::getValue('print_logo_path');
 @endphp
 <html lang="id">
 <head>

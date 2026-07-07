@@ -15,12 +15,18 @@ const form = useForm({
     app_favicon_image: null,
     google_spreadsheet_id: props.settings.google_spreadsheet_id || '',
     google_service_account_json: props.settings.google_service_account_json || '',
+    // Print custom values
+    print_company_name: props.settings.print_company_name || 'HERBATECH',
+    print_logo_type: props.settings.print_logo_type || 'text',
+    print_logo_image: null,
 });
 
 const previewUrl = ref(null);
 const fileInput = ref(null);
 const faviconPreviewUrl = ref(null);
 const faviconInput = ref(null);
+const printPreviewUrl = ref(null);
+const printLogoInput = ref(null);
 
 const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -38,14 +44,24 @@ const handleFaviconChange = (e) => {
     }
 };
 
+const handlePrintLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        form.print_logo_image = file;
+        printPreviewUrl.value = URL.createObjectURL(file);
+    }
+};
+
 const submitSettings = () => {
     // We must submit via Inertia post because of multipart form data (logo file upload)
     form.post(route('superadmin.settings.update'), {
         onSuccess: () => {
             previewUrl.value = null;
             faviconPreviewUrl.value = null;
+            printPreviewUrl.value = null;
             if (fileInput.value) fileInput.value.value = '';
             if (faviconInput.value) faviconInput.value.value = '';
+            if (printLogoInput.value) printLogoInput.value.value = '';
         },
         onError: () => {
             window.dispatchEvent(new CustomEvent('qms-notification', {
@@ -180,6 +196,68 @@ const submitSettings = () => {
                             <div v-if="form.errors.app_favicon_image" style="color: #ef4444; font-size: 0.8rem; margin-top: 4px;">{{ form.errors.app_favicon_image }}</div>
                             <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">Format: PNG, JPG, ICO, SVG. Maks. 512KB. Disarankan 32×32px atau 64×64px.</div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Print Document Settings Card -->
+                <div class="qms-card" style="border-top: 4px solid #16a34a;">
+                    <h3 style="font-size: 1.15rem; margin-top: 0; margin-bottom: 8px; color: var(--text-primary);">
+                        🖨️ Kustomisasi Cetakan Dokumen (PDF/Print)
+                    </h3>
+                    <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0; margin-bottom: 20px;">
+                        Pengaturan logo khusus yang digunakan saat mencetak dokumen formulir Change Request, Deviation Report, dan Form Penyelidikan.
+                    </p>
+
+                    <div class="form-group">
+                        <label class="form-label">Nama Perusahaan / Teks Logo Cetakan</label>
+                        <input type="text" class="form-input" v-model="form.print_company_name" required placeholder="Contoh: HERBATECH" />
+                        <div v-if="form.errors.print_company_name" style="color: #ef4444; font-size: 0.8rem; margin-top: 4px;">{{ form.errors.print_company_name }}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">Teks nama perusahaan yang akan dicetak di sudut kiri atas formulir jika tipe logo adalah teks.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Tipe Logo pada Cetakan</label>
+                        <select class="form-select" v-model="form.print_logo_type">
+                            <option value="text">Teks Perusahaan (Default)</option>
+                            <option value="image">Unggah Gambar Logo Khusus</option>
+                        </select>
+                        <div v-if="form.errors.print_logo_type" style="color: #ef4444; font-size: 0.8rem; margin-top: 4px;">{{ form.errors.print_logo_type }}</div>
+                    </div>
+
+                    <!-- Print File Upload Logo -->
+                    <div v-if="form.print_logo_type === 'image'" class="form-group fade-in" style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
+                        <label class="form-label">Unggah Gambar Logo Cetakan</label>
+                        
+                        <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                            <!-- Current print logo preview -->
+                            <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; background-color: var(--bg-tertiary); min-width: 100px; min-height: 60px; display: flex; align-items: center; justify-content: center;">
+                                <template v-if="printPreviewUrl">
+                                    <img :src="printPreviewUrl" alt="Preview" style="max-height: 40px; max-width: 150px; object-fit: contain;" />
+                                </template>
+                                <template v-else-if="settings.print_logo_path">
+                                    <img :src="'/storage/' + settings.print_logo_path" alt="Current Print Logo" style="max-height: 40px; max-width: 150px; object-fit: contain;" />
+                                </template>
+                                <template v-else>
+                                    <span style="color: var(--text-muted); font-size: 0.8rem;">Belum ada file</span>
+                                </template>
+                            </div>
+
+                            <!-- File input button -->
+                            <div style="flex-grow: 1;">
+                                <input
+                                    type="file"
+                                    ref="printLogoInput"
+                                    accept="image/*"
+                                    @change="handlePrintLogoChange"
+                                    style="display: none;"
+                                />
+                                <button type="button" @click="$refs.printLogoInput.click()" class="btn btn-secondary">
+                                    📁 Pilih Gambar Logo Cetakan
+                                </button>
+                                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">Format gambar (PNG, JPG, SVG). Maksimal 2MB.</div>
+                            </div>
+                        </div>
+                        <div v-if="form.errors.print_logo_image" style="color: #ef4444; font-size: 0.8rem; margin-top: 4px;">{{ form.errors.print_logo_image }}</div>
                     </div>
                 </div>
 

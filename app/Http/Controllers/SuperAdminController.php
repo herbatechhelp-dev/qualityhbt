@@ -124,7 +124,7 @@ class SuperAdminController extends Controller
             'google_spreadsheet_id' => 'nullable|string|max:255',
             'google_service_account_json' => 'nullable|string',
             // Print validations
-            'print_company_name' => 'required|string|max:255',
+            'print_company_name' => 'required_if:print_logo_type,text|nullable|string|max:255',
             'print_logo_type' => 'required|string|in:text,image',
             'print_logo_image' => 'nullable|image|max:2048',
         ]);

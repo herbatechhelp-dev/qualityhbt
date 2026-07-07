@@ -210,7 +210,7 @@ const submitSettings = () => {
 
                     <div class="form-group">
                         <label class="form-label">Nama Perusahaan / Teks Logo Cetakan</label>
-                        <input type="text" class="form-input" v-model="form.print_company_name" required placeholder="Contoh: HERBATECH" />
+                        <input type="text" class="form-input" v-model="form.print_company_name" :required="form.print_logo_type === 'text'" placeholder="Contoh: HERBATECH" />
                         <div v-if="form.errors.print_company_name" style="color: #ef4444; font-size: 0.8rem; margin-top: 4px;">{{ form.errors.print_company_name }}</div>
                         <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">Teks nama perusahaan yang akan dicetak di sudut kiri atas formulir jika tipe logo adalah teks.</div>
                     </div>

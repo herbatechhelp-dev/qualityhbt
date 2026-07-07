@@ -59,6 +59,9 @@ const sodGuide = {
 };
 
 // ─── Form state ──────────────────────────────────────────────────────────────
+const jenisPenyimpanganLainnya = ref('');
+const identifikasiLainnya = ref('');
+
 const form = useForm({
     // Section A
     department:    '',
@@ -67,7 +70,9 @@ const form = useForm({
     description:   '',
     // Section B
     jenis_penyimpangan:        [],
+    jenis_penyimpangan_lainnya: '',
     identifikasi_penyimpangan: [],
+    identifikasi_penyimpangan_lainnya: '',
     kepala_departemen:          '',
     // Section C — multiple attachments
     new_attachments:              [],
@@ -216,7 +221,7 @@ const submitForm = (submitType) => {
                     </div>
 
                     <!-- Row 2: Departemen + Tanggal Temuan -->
-                    <div class="grid-2" style="margin-bottom:16px;">
+                    <div class="grid-2" style="margin-bottom:0;">
                         <div class="form-group" style="margin-bottom:0;">
                             <label class="form-label">Departemen Pengaju <span style="color:#ef4444;">*</span></label>
                             <input id="department" type="text" v-model="form.department" class="form-input"
@@ -227,15 +232,6 @@ const submitForm = (submitType) => {
                             <label class="form-label">Tanggal Temuan</label>
                             <input id="tanggal_temuan" type="date" v-model="form.tanggal_temuan" class="form-input" />
                         </div>
-                    </div>
-
-                    <!-- Deskripsi / Rincian Penyimpangan -->
-                    <div class="form-group">
-                        <label class="form-label">Deviasi Terkait / Rincian Penyimpangan <span style="color:#ef4444;">*</span></label>
-                        <textarea id="description" v-model="form.description" class="form-textarea" rows="5"
-                            placeholder="Uraikan detail temuan ketidaksesuaian, waktu kejadian, dan dampak awal jika ada..."
-                            required></textarea>
-                        <div v-if="form.errors.description" style="color:#ef4444;font-size:0.8rem;margin-top:4px;">{{ form.errors.description }}</div>
                     </div>
                 </div>
 
@@ -257,6 +253,12 @@ const submitForm = (submitType) => {
                                     {{ opt }}
                                 </label>
                             </div>
+                            <!-- Textbox muncul jika 'Lainnya' dipilih -->
+                            <div v-if="form.jenis_penyimpangan.includes('Lainnya')" class="fade-in" style="margin-top:8px;">
+                                <input type="text" v-model="form.jenis_penyimpangan_lainnya" class="form-input"
+                                    placeholder="Sebutkan jenis penyimpangan lainnya..."
+                                    style="font-size:0.875rem;" />
+                            </div>
                         </div>
 
                         <!-- Identifikasi / Cara Ditemukan -->
@@ -269,6 +271,12 @@ const submitForm = (submitType) => {
                                         style="width:16px;height:16px;accent-color:var(--accent-color);" />
                                     {{ opt }}
                                 </label>
+                            </div>
+                            <!-- Textbox muncul jika 'Lainnya' dipilih -->
+                            <div v-if="form.identifikasi_penyimpangan.includes('Lainnya')" class="fade-in" style="margin-top:8px;">
+                                <input type="text" v-model="form.identifikasi_penyimpangan_lainnya" class="form-input"
+                                    placeholder="Sebutkan cara identifikasi lainnya..."
+                                    style="font-size:0.875rem;" />
                             </div>
                         </div>
                     </div>
@@ -283,6 +291,20 @@ const submitForm = (submitType) => {
                             </option>
                         </select>
                         <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">TTD hanya sampai level Kepala Departemen terkait.</div>
+                    </div>
+                </div>
+
+                <!-- ─── DESKRIPSI (dipindah ke bawah Section B) ──────────────── -->
+                <div class="qms-card">
+                    <h3 style="font-size:1.1rem;font-weight:800;color:var(--accent-color);border-bottom:1px solid var(--border-color);padding-bottom:12px;margin-bottom:20px;">
+                        Deviasi Terkait / Rincian Penyimpangan
+                    </h3>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">Uraian Detail <span style="color:#ef4444;">*</span></label>
+                        <textarea id="description" v-model="form.description" class="form-textarea" rows="5"
+                            placeholder="Uraikan detail temuan ketidaksesuaian, waktu kejadian, dan dampak awal jika ada..."
+                            required></textarea>
+                        <div v-if="form.errors.description" style="color:#ef4444;font-size:0.8rem;margin-top:4px;">{{ form.errors.description }}</div>
                     </div>
                 </div>
 

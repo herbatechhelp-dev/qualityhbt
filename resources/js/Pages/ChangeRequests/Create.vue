@@ -1,7 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, useForm, Link } from '@inertiajs/vue3';
-import { computed } from 'vue';
 
 const form = useForm({
     type: 'CRA', // Default CRA
@@ -20,26 +19,7 @@ const form = useForm({
     submit_type: 'submit',
 });
 
-// Auto-calculate RPN
-const rpn = computed(() => {
-    if (form.type !== 'CRA') return null;
-    return form.severity * form.occurrence * form.detection;
-});
 
-// Risk Severity classification
-const rpnClass = computed(() => {
-    if (rpn.value === null) return '';
-    if (rpn.value <= 100) return 'status-badge badge-approved'; // Low
-    if (rpn.value <= 250) return 'status-badge badge-in_review'; // Medium
-    return 'status-badge badge-reject'; // High
-});
-
-const rpnText = computed(() => {
-    if (rpn.value === null) return '';
-    if (rpn.value <= 100) return 'Low Risk';
-    if (rpn.value <= 250) return 'Medium Risk';
-    return 'High Risk';
-});
 
 const setType = (type) => {
     form.type = type;
@@ -170,36 +150,6 @@ const submitForm = (submitType) => {
                         </div>
                     </div>
 
-                    <!-- FMEA parameters (CRA Only) -->
-                    <div v-if="form.type === 'CRA'" style="border-top: 1px solid var(--border-color); padding-top: 16px;">
-                        <label class="form-label" style="font-weight: 600;">Penilaian Parameter Risiko FMEA (Skala 1 - 10)</label>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-top: 8px;">
-                            <div class="form-group" style="margin-bottom: 0;">
-                                <label for="severity" class="form-label" style="font-size: 0.775rem;">Severity (Keparahan)</label>
-                                <select id="severity" v-model.number="form.severity" class="form-select">
-                                    <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
-                                </select>
-                            </div>
-                            <div class="form-group" style="margin-bottom: 0;">
-                                <label for="occurrence" class="form-label" style="font-size: 0.775rem;">Occurrence (Keterjadian)</label>
-                                <select id="occurrence" v-model.number="form.occurrence" class="form-select">
-                                    <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
-                                </select>
-                            </div>
-                            <div class="form-group" style="margin-bottom: 0;">
-                                <label for="detection" class="form-label" style="font-size: 0.775rem;">Detection (Deteksi)</label>
-                                <select id="detection" v-model.number="form.detection" class="form-select">
-                                    <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
-                                </select>
-                            </div>
-                            <!-- RPN Result Card -->
-                            <div class="qms-card" style="padding: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: var(--bg-secondary); border: 2px dashed var(--accent-color);">
-                                <span style="font-size: 0.7rem; text-transform: uppercase; color: var(--text-secondary); font-weight: bold;">Calculated RPN</span>
-                                <span style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary);">{{ rpn }}</span>
-                                <span :class="rpnClass" style="margin-top: 4px; font-size: 0.65rem;">{{ rpnText }}</span>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Attachment Files -->

@@ -363,6 +363,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+/* redeploy: 2026-07-08 */
 .auth-wrapper {
     min-height: 100vh;
     display: flex;

@@ -472,6 +472,7 @@ const submitForm = (submitType) => {
 </template>
 
 <style scoped>
+/* redeploy: 2026-07-08 */
 .rpn-low    { color: #22c55e; }
 .rpn-medium { color: #f59e0b; }
 .rpn-high   { color: #ef4444; }

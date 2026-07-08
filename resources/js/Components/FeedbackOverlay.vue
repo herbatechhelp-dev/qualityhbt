@@ -162,6 +162,4 @@ const closeAlert = () => {
     </div>
 </template>
 
-<style scoped>
-/* Scoped styles have been moved to app.css to prevent compilation and flex container positioning issues */
-</style>
+

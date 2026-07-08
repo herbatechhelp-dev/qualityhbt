@@ -98,6 +98,63 @@ const submitDecision = () => {
     }
 };
 
+// ─── FMEA Inline Editing Form ───────────────────────────────────────────────
+const isEditingFmea = ref(false);
+const fmeaForm = useForm({
+    risk_analysis: JSON.parse(JSON.stringify(props.deviation.risk_analysis || []))
+});
+
+const startEditingFmea = () => {
+    fmeaForm.risk_analysis = JSON.parse(JSON.stringify(props.deviation.risk_analysis || []));
+    isEditingFmea.value = true;
+};
+
+const cancelEditingFmea = () => {
+    isEditingFmea.value = false;
+};
+
+const addRiskRow = () => {
+    fmeaForm.risk_analysis.push({
+        risk_identification: '',
+        potensiasi_cause:    '',
+        s: 1,
+        o: 1,
+        d: 1,
+        rpn: 1,
+        risk_control: '',
+        action: '',
+        s_after: 1,
+        o_after: 1,
+        d_after: 1,
+        rpn_after: 1,
+    });
+};
+
+const removeRiskRow = (idx) => {
+    fmeaForm.risk_analysis.splice(idx, 1);
+};
+
+const updateRpn = (row) => {
+    row.rpn = (parseInt(row.s) || 1) * (parseInt(row.o) || 1) * (parseInt(row.d) || 1);
+    row.rpn_after = (parseInt(row.s_after) || 1) * (parseInt(row.o_after) || 1) * (parseInt(row.d_after) || 1);
+};
+
+const saveFmea = () => {
+    fmeaForm.post(route('deviations.update-fmea', props.deviation.id), {
+        onSuccess: () => {
+            isEditingFmea.value = false;
+            window.dispatchEvent(new CustomEvent('qms-notification', {
+                detail: { type: 'success', title: 'Berhasil', message: 'Analisis Risiko FMEA berhasil diperbarui!' }
+            }));
+        },
+        onError: (errors) => {
+            window.dispatchEvent(new CustomEvent('qms-notification', {
+                detail: { type: 'error', title: 'Gagal Menyimpan', message: 'Terjadi kesalahan saat menyimpan FMEA.' }
+            }));
+        }
+    });
+};
+
 // ─── Status badge ─────────────────────────────────────────────────────────────
 const getStatusClass = (status) => {
     switch (status) {
@@ -375,14 +432,159 @@ const getStatusClass = (status) => {
                             <h3 style="font-size:1.05rem;font-weight:800;color:var(--accent-color);margin:0;">
                                 D. Risk Analysis (FMEA)
                             </h3>
-                            <button type="button" @click="showSodGuide = true" class="btn btn-secondary"
-                                style="padding:4px 12px;font-size:0.78rem;font-weight:600;">
-                                ℹ️ Panduan SOD
-                            </button>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <button type="button" @click="showSodGuide = true" class="btn btn-secondary"
+                                    style="padding:4px 12px;font-size:0.78rem;font-weight:600;">
+                                    ℹ️ Panduan SOD
+                                </button>
+                                <!-- Edit FMEA Button for QA when deviation status is OPEN -->
+                                <template v-if="canEvaluate && deviation.status === 'OPEN'">
+                                    <button v-if="!isEditingFmea" type="button" @click="startEditingFmea" class="btn btn-primary"
+                                        style="padding:4px 12px;font-size:0.78rem;font-weight:600;background-color:#6366f1;border-color:#6366f1;">
+                                        ✏️ Edit FMEA
+                                    </button>
+                                    <button v-if="isEditingFmea" type="button" @click="addRiskRow" class="btn btn-secondary"
+                                        style="padding:4px 12px;font-size:0.78rem;font-weight:600;">
+                                        + Tambah Baris
+                                    </button>
+                                </template>
+                            </div>
                         </div>
 
-                        <div v-if="deviation.risk_analysis && deviation.risk_analysis.length" style="display:flex;flex-direction:column;gap:12px;">
-                            <div v-for="(row, idx) in deviation.risk_analysis" :key="idx"
+                        <!-- EDITING FMEA MODE -->
+                        <div v-if="isEditingFmea" style="display:flex;flex-direction:column;gap:12px;">
+                            <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:10px;">
+                                Mengedit analisis risiko FMEA untuk laporan ini. Klik "💾 Simpan FMEA" untuk memperbarui.
+                            </div>
+
+                            <!-- Empty state in Edit Mode -->
+                            <div v-if="fmeaForm.risk_analysis.length === 0"
+                                style="text-align:center;color:var(--text-muted);font-size:0.85rem;padding:24px;background:var(--bg-primary);border:1px dashed var(--border-color);border-radius:8px;">
+                                📊 Belum ada baris analisis risiko. Klik "+ Tambah Baris" untuk menambahkan.
+                            </div>
+
+                            <!-- Edit Rows -->
+                            <div v-for="(row, idx) in fmeaForm.risk_analysis" :key="idx"
+                                style="background:var(--bg-primary);border:1px solid var(--border-color);border-radius:10px;padding:16px;margin-bottom:12px;position:relative;">
+                                <div style="position:absolute;top:12px;right:12px;">
+                                    <button type="button" @click="removeRiskRow(idx)" class="btn btn-danger"
+                                        style="padding:4px 10px;font-size:0.75rem;">🗑️ Hapus</button>
+                                </div>
+                                <div style="font-size:0.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:12px;">
+                                    Risiko #{{ idx + 1 }}
+                                    <span style="margin-left:12px;font-size:0.8rem;" :class="getRpnClass(row.rpn)">
+                                        RPN = {{ row.rpn }}
+                                    </span>
+                                </div>
+
+                                <div class="grid-2" style="gap:12px;margin-bottom:12px;">
+                                    <div class="form-group" style="margin-bottom:0;">
+                                        <label class="form-label">Risk Identification</label>
+                                        <input type="text" v-model="row.risk_identification" class="form-input"
+                                            placeholder="Identifikasi potensi risiko..." />
+                                    </div>
+                                    <div class="form-group" style="margin-bottom:0;">
+                                        <label class="form-label">Potensiasi Cause (Akar Masalah)</label>
+                                        <input type="text" v-model="row.potensiasi_cause" class="form-input"
+                                            placeholder="Penyebab potensial risiko..." />
+                                    </div>
+                                </div>
+
+                                <!-- SOD values -->
+                                <div style="display:flex;gap:10px;margin-bottom:12px;align-items:flex-end;flex-wrap:wrap;">
+                                    <div class="form-group" style="margin-bottom:0;min-width:90px;flex:1;">
+                                        <label class="form-label">Severity (S)</label>
+                                        <select v-model.number="row.s" class="form-select" @change="updateRpn(row)">
+                                            <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" style="margin-bottom:0;min-width:90px;flex:1;">
+                                        <label class="form-label">Occurrence (O)</label>
+                                        <select v-model.number="row.o" class="form-select" @change="updateRpn(row)">
+                                            <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" style="margin-bottom:0;min-width:90px;flex:1;">
+                                        <label class="form-label">Detection (D)</label>
+                                        <select v-model.number="row.d" class="form-select" @change="updateRpn(row)">
+                                            <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
+                                        </select>
+                                    </div>
+                                    <div style="min-width:100px;flex:1;text-align:center;padding-bottom:2px;">
+                                        <div style="font-size:0.7rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;margin-bottom:4px;">RPN (S×O×D)</div>
+                                        <div style="font-size:1.6rem;font-weight:900;line-height:1;" :class="getRpnClass(row.rpn)">
+                                            {{ row.rpn }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="grid-2" style="gap:12px; margin-bottom:12px;">
+                                    <div class="form-group" style="margin-bottom:0;">
+                                        <label class="form-label">Corrective (Tindakan Korektif)</label>
+                                        <input type="text" v-model="row.risk_control" class="form-input"
+                                            placeholder="Tindakan perbaikan segera..." />
+                                    </div>
+                                    <div class="form-group" style="margin-bottom:0;">
+                                        <label class="form-label">Preventive (Tindakan Pencegahan)</label>
+                                        <input type="text" v-model="row.action" class="form-input"
+                                            placeholder="Tindakan pencegahan agar tidak terulang..." />
+                                    </div>
+                                </div>
+
+                                <!-- Expected / Residual Risk after corrective/preventive action -->
+                                <div style="margin-top: 16px; border-top: 1px dashed var(--border-color); padding-top: 16px;">
+                                    <div style="font-size:0.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:12px;">
+                                        Penilaian Risiko Setelah Tindakan (Residual Risk)
+                                        <span style="margin-left:12px;font-size:0.8rem;" :class="getRpnClass(row.rpn_after || 1)">
+                                            Expected RPN = {{ row.rpn_after || 1 }}
+                                        </span>
+                                    </div>
+                                    <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">
+                                        <div class="form-group" style="margin-bottom:0;min-width:90px;flex:1;">
+                                            <label class="form-label">Expected Severity (S)</label>
+                                            <select v-model.number="row.s_after" class="form-select" @change="updateRpn(row)">
+                                                <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group" style="margin-bottom:0;min-width:90px;flex:1;">
+                                            <label class="form-label">Expected Occurrence (O)</label>
+                                            <select v-model.number="row.o_after" class="form-select" @change="updateRpn(row)">
+                                                <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group" style="margin-bottom:0;min-width:90px;flex:1;">
+                                            <label class="form-label">Expected Detection (D)</label>
+                                            <select v-model.number="row.d_after" class="form-select" @change="updateRpn(row)">
+                                                <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
+                                            </select>
+                                        </div>
+                                        <div style="min-width:100px;flex:1;text-align:center;padding-bottom:2px;">
+                                            <div style="font-size:0.7rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;margin-bottom:4px;">Expected RPN (S×O×D)</div>
+                                            <div style="font-size:1.6rem;font-weight:900;line-height:1;" :class="getRpnClass(row.rpn_after || 1)">
+                                                {{ row.rpn_after || 1 }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Edit Mode Buttons -->
+                            <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:16px;">
+                                <button type="button" @click="cancelEditingFmea" class="btn btn-secondary"
+                                    :disabled="fmeaForm.processing" style="padding:8px 20px;font-weight:600;">
+                                    Cancel
+                                </button>
+                                <button type="button" @click="saveFmea" class="btn btn-primary"
+                                    :disabled="fmeaForm.processing" style="padding:8px 24px;font-weight:700;background-color:#10b981;border-color:#10b981;">
+                                    {{ fmeaForm.processing ? 'Saving...' : '💾 Simpan FMEA' }}
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- READ ONLY DISPLAY MODE -->
+                        <div v-else>
+                            <div v-if="deviation.risk_analysis && deviation.risk_analysis.length" style="display:flex;flex-direction:column;gap:12px;">
+                                <div v-for="(row, idx) in deviation.risk_analysis" :key="idx"
                                 style="background:var(--bg-primary);border:1px solid var(--border-color);border-radius:10px;padding:16px;">
                                 <div style="font-size:0.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;">
                                     <span>Risiko #{{ idx + 1 }}</span>
@@ -469,6 +671,7 @@ const getStatusClass = (status) => {
                         </div>
 
                         <div v-else style="color:var(--text-muted);font-size:0.875rem;padding:12px 0;">📊 Tidak ada data analisis risiko.</div>
+                    </div>
                     </div>
                 </div>
 

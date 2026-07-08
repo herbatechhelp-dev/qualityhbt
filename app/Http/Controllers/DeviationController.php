@@ -323,6 +323,28 @@ class DeviationController extends Controller
         return redirect()->route('deviations.show', $deviation->id)->with('success', 'Deviation status updated.');
     }
 
+    public function updateFmea(Request $request, Deviation $deviation)
+    {
+        if (!$request->user()->isQaOrManagement()) {
+            abort(403, 'Unauthorized. Only QA and Management can edit FMEA.');
+        }
+
+        // Only editable before reject or approve (meaning status is 'OPEN' or 'IN REVIEW')
+        if (!in_array($deviation->status, ['OPEN', 'IN REVIEW'])) {
+            abort(400, 'Cannot edit FMEA at this stage.');
+        }
+
+        $request->validate([
+            'risk_analysis' => 'nullable|array',
+        ]);
+
+        $deviation->update([
+            'risk_analysis' => $request->risk_analysis ?? [],
+        ]);
+
+        return redirect()->route('deviations.show', $deviation->id)->with('success', 'Analisis Risiko FMEA berhasil diperbarui oleh QA.');
+    }
+
     public function printDr(Deviation $deviation)
     {
         $user = auth()->user();

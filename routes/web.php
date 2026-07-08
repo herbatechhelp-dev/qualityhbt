@@ -140,6 +140,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/deviations/{deviation}/edit', [DeviationController::class, 'edit'])->name('deviations.edit');
     Route::post('/deviations/{deviation}', [DeviationController::class, 'update'])->name('deviations.update');
     Route::post('/deviations/{deviation}/decide', [DeviationController::class, 'decide'])->name('deviations.decide');
+    Route::post('/deviations/{deviation}/update-fmea', [DeviationController::class, 'updateFmea'])->name('deviations.update-fmea');
     Route::get('/deviations/{deviation}/print-dr', [DeviationController::class, 'printDr'])->name('deviations.print-dr');
     Route::get('/deviations/{deviation}/print-investigation', [DeviationController::class, 'printInvestigation'])->name('deviations.print-investigation');
 

@@ -241,13 +241,51 @@ const getStatusClass = (status) => {
                             </div>
                         </div>
 
-                        <div>
-                            <span style="font-size:0.75rem;color:var(--text-muted);display:block;text-transform:uppercase;margin-bottom:6px;">Deviasi Terkait / Rincian Penyimpangan</span>
+                        <div style="margin-bottom:16px;">
+                            <span style="font-size:0.75rem;color:var(--text-muted);display:block;text-transform:uppercase;margin-bottom:6px;">II. Apakah ada bets / Produk lain yang terkena imbasnya?</span>
+                            <div style="background:var(--bg-primary);border:1px solid var(--border-color);border-radius:8px;padding:12px 16px;font-size:0.9rem;">
+                                <div style="font-weight:600;color:var(--text-primary);margin-bottom:4px;">
+                                    {{ deviation.is_other_batch_affected ? '✅ Ya' : '❌ Tidak' }}
+                                </div>
+                                <div v-if="deviation.is_other_batch_affected" style="color:var(--text-muted);font-size:0.85rem;border-top:1px dashed var(--border-color);padding-top:4px;margin-top:4px;">
+                                    Detail: {{ deviation.other_batch_affected_details }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom:16px;">
+                            <span style="font-size:0.75rem;color:var(--text-muted);display:block;text-transform:uppercase;margin-bottom:6px;">III. Uraian Detail (Uraian Penyimpangan)</span>
                             <div style="background:var(--bg-primary);border:1px solid var(--border-color);border-radius:8px;padding:16px;line-height:1.7;color:var(--text-primary);white-space:pre-wrap;font-size:0.9rem;">{{ deviation.description }}</div>
+                        </div>
+
+                        <div style="margin-bottom:16px;">
+                            <span style="font-size:0.75rem;color:var(--text-muted);display:block;text-transform:uppercase;margin-bottom:6px;">IV. Frekuensi Penyimpangan</span>
+                            <div style="font-weight:600;color:var(--text-primary);font-size:0.9rem;">
+                                📊 {{ deviation.deviation_frequency || 'Tidak Pernah sebelumnya' }}
+                            </div>
                         </div>
 
                         <div style="margin-top:8px;font-size:0.78rem;color:var(--text-muted);text-align:right;">
                             Dilaporkan: {{ new Date(deviation.created_at).toLocaleDateString('id-ID', {day:'2-digit', month:'long', year:'numeric'}) }}
+                        </div>
+                    </div>
+
+                    <!-- B. Rincian Tindakan Sementara (Immediate Action) -->
+                    <div class="qms-card">
+                        <h3 style="font-size:1.05rem;font-weight:800;color:var(--accent-color);border-bottom:1px solid var(--border-color);padding-bottom:10px;margin-bottom:16px;">
+                            B. Rincian Tindakan Sementara yang Diambil (Immediate Action)
+                        </h3>
+
+                        <div style="margin-bottom:16px;">
+                            <span style="font-size:0.75rem;color:var(--text-muted);display:block;text-transform:uppercase;margin-bottom:4px;">I. Penghentian Proses Produksi</span>
+                            <span style="font-weight:600;color:var(--text-primary);">
+                                {{ deviation.is_production_stopped ? '⚠️ Ya (Dihentikan)' : '✅ Tidak (Tetap Berjalan)' }}
+                            </span>
+                        </div>
+
+                        <div>
+                            <span style="font-size:0.75rem;color:var(--text-muted);display:block;text-transform:uppercase;margin-bottom:6px;">II. Penanganan Cepat Lain Terhadap Produk</span>
+                            <div style="background:var(--bg-primary);border:1px solid var(--border-color);border-radius:8px;padding:12px 16px;line-height:1.6;color:var(--text-primary);white-space:pre-wrap;font-size:0.9rem;">{{ deviation.immediate_action_details || '—' }}</div>
                         </div>
                     </div>
 
@@ -388,12 +426,43 @@ const getStatusClass = (status) => {
 
                                 <div class="grid-2" style="gap:12px;">
                                     <div>
-                                        <span style="font-size:0.72rem;color:var(--text-muted);display:block;text-transform:uppercase;margin-bottom:4px;">Risk Control</span>
+                                        <span style="font-size:0.72rem;color:var(--text-muted);display:block;text-transform:uppercase;margin-bottom:4px;">Corrective (Tindakan Korektif)</span>
                                         <span style="font-size:0.875rem;color:var(--text-primary);">{{ row.risk_control || '—' }}</span>
                                     </div>
                                     <div>
-                                        <span style="font-size:0.72rem;color:var(--text-muted);display:block;text-transform:uppercase;margin-bottom:4px;">Action (Tindakan)</span>
+                                        <span style="font-size:0.72rem;color:var(--text-muted);display:block;text-transform:uppercase;margin-bottom:4px;">Preventive (Tindakan Pencegahan)</span>
                                         <span style="font-size:0.875rem;color:var(--text-primary);">{{ row.action || '—' }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Expected / Residual Risk after corrective/preventive action -->
+                                <div style="margin-top:14px;border-top:1px dashed var(--border-color);padding-top:14px;">
+                                    <div style="font-size:0.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;">
+                                        <span>Setelah Tindakan (Residual Risk)</span>
+                                        <span style="font-size:0.9rem;font-weight:900;" :class="getRpnClass(parseInt(row.rpn_after || 1))">
+                                            Expected RPN = {{ row.rpn_after || 1 }}
+                                            <span style="font-size:0.7rem;font-weight:600;margin-left:4px;">
+                                                ({{ parseInt(row.rpn_after || 1) <= 50 ? 'Rendah' : parseInt(row.rpn_after || 1) <= 200 ? 'Sedang' : 'Tinggi' }})
+                                            </span>
+                                        </span>
+                                    </div>
+                                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                                        <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:8px;padding:6px 12px;text-align:center;min-width:70px;">
+                                            <div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;">Severity</div>
+                                            <div style="font-size:1.15rem;font-weight:900;color:var(--text-primary);">{{ row.s_after || 1 }}</div>
+                                        </div>
+                                        <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:8px;padding:6px 12px;text-align:center;min-width:70px;">
+                                            <div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;">Occurrence</div>
+                                            <div style="font-size:1.15rem;font-weight:900;color:var(--text-primary);">{{ row.o_after || 1 }}</div>
+                                        </div>
+                                        <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:8px;padding:6px 12px;text-align:center;min-width:70px;">
+                                            <div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;">Detection</div>
+                                            <div style="font-size:1.15rem;font-weight:900;color:var(--text-primary);">{{ row.d_after || 1 }}</div>
+                                        </div>
+                                        <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:8px;padding:6px 12px;text-align:center;min-width:70px;" :class="getRpnClass(parseInt(row.rpn_after || 1))">
+                                            <div style="font-size:0.65rem;text-transform:uppercase;opacity:0.8;">RPN</div>
+                                            <div style="font-size:1.15rem;font-weight:900;">{{ row.rpn_after || 1 }}</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

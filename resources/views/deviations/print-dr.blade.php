@@ -250,10 +250,10 @@
                     <td>
                         <div class="label-bold" style="margin-bottom: 4px;">II. Apakah ada bets/ Produk lain yang terkena imbasnya?</div>
                         <div style="margin-bottom: 4px;">
-                            <span class="chk-box"></span> Ya, sebutkan : .........................................................................
+                            <span class="chk-box">{{ $deviation->is_other_batch_affected ? '✓' : '' }}</span> Ya, sebutkan : {{ $deviation->is_other_batch_affected ? $deviation->other_batch_affected_details : '.........................................................................' }}
                         </div>
                         <div>
-                            <span class="chk-box">✓</span> Tidak
+                            <span class="chk-box">{{ !$deviation->is_other_batch_affected ? '✓' : '' }}</span> Tidak
                         </div>
                     </td>
                 </tr>
@@ -267,9 +267,9 @@
                     <td>
                         <div class="label-bold" style="margin-bottom: 4px;">IV. Frekuensi Penyimpangan</div>
                         <div style="display: flex; gap: 40px;">
-                            <div><span class="chk-box"></span> Sering</div>
-                            <div><span class="chk-box"></span> Jarang</div>
-                            <div><span class="chk-box">✓</span> Tidak Pernah sebelumnya</div>
+                            <div><span class="chk-box">{{ $deviation->deviation_frequency === 'Sering' ? '✓' : '' }}</span> Sering</div>
+                            <div><span class="chk-box">{{ $deviation->deviation_frequency === 'Jarang' ? '✓' : '' }}</span> Jarang</div>
+                            <div><span class="chk-box">{{ ($deviation->deviation_frequency === 'Tidak Pernah sebelumnya' || !$deviation->deviation_frequency) ? '✓' : '' }}</span> Tidak Pernah sebelumnya</div>
                         </div>
                     </td>
                 </tr>
@@ -284,13 +284,11 @@
                     <td>
                         <div class="label-bold" style="margin-bottom: 4px;">I. Penghentian Proses Produksi</div>
                         <div style="display: flex; gap: 40px; margin-bottom: 8px;">
-                            <div><span class="chk-box"></span> Ya</div>
-                            <div><span class="chk-box">✓</span> Tidak</div>
+                            <div><span class="chk-box">{{ $deviation->is_production_stopped ? '✓' : '' }}</span> Ya</div>
+                            <div><span class="chk-box">{{ !$deviation->is_production_stopped ? '✓' : '' }}</span> Tidak</div>
                         </div>
                         <div class="label-bold" style="margin-bottom: 4px; border-top: 1px dashed #ccc; padding-top: 6px;">II. Penanganan cepat lain terhadap produk</div>
-                        <div style="font-style: italic; color: #4b5563; min-height: 30px;">
-                            -
-                        </div>
+                        <div style="font-family: monospace; font-size: 9.5px; white-space: pre-wrap; line-height: 1.4; padding: 4px; background-color: #fafafa; border: 1px solid #ddd; border-radius: 4px; min-height: 30px;">{{ $deviation->immediate_action_details ?: '-' }}</div>
                     </td>
                 </tr>
             </table>

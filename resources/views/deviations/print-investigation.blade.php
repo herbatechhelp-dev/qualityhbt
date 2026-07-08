@@ -562,11 +562,11 @@
                                     <td style="text-align: center;">{{ $risk['d'] ?? '1' }}</td>
                                     <td style="text-align: center; font-weight: bold;">{{ $risk['rpn'] ?? '1' }}</td>
                                     <td>{{ $risk['risk_control'] ?? 'Control' }}</td>
-                                    <td style="text-align: center;">{{ $risk['s'] ?? '1' }}</td>
-                                    <td style="text-align: center;">{{ max(1, intval($risk['o'] ?? 2) - 1) }}</td>
-                                    <td style="text-align: center;">{{ $risk['d'] ?? '1' }}</td>
+                                    <td style="text-align: center;">{{ $risk['s_after'] ?? '1' }}</td>
+                                    <td style="text-align: center;">{{ $risk['o_after'] ?? '1' }}</td>
+                                    <td style="text-align: center;">{{ $risk['d_after'] ?? '1' }}</td>
                                     <td style="text-align: center; font-weight: bold;">
-                                        {{ intval($risk['s'] ?? 1) * max(1, intval($risk['o'] ?? 2) - 1) * intval($risk['d'] ?? 1) }}
+                                        {{ $risk['rpn_after'] ?? '1' }}
                                     </td>
                                 </tr>
                             @endforeach

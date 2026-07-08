@@ -74,6 +74,12 @@ const form = useForm({
     identifikasi_penyimpangan: [],
     identifikasi_penyimpangan_lainnya: '',
     kepala_departemen:          '',
+    // New fields
+    is_other_batch_affected: false,
+    other_batch_affected_details: '',
+    deviation_frequency: 'Tidak Pernah sebelumnya',
+    is_production_stopped: false,
+    immediate_action_details: '',
     // Section C — multiple attachments
     new_attachments:              [],
     new_attachment_descriptions:  [],
@@ -112,6 +118,10 @@ const addRiskRow = () => {
         rpn: 1,
         risk_control: '',
         action: '',
+        s_after: 1,
+        o_after: 1,
+        d_after: 1,
+        rpn_after: 1,
     });
 };
 
@@ -121,6 +131,7 @@ const removeRiskRow = (idx) => {
 
 const updateRpn = (row) => {
     row.rpn = (parseInt(row.s) || 1) * (parseInt(row.o) || 1) * (parseInt(row.d) || 1);
+    row.rpn_after = (parseInt(row.s_after) || 1) * (parseInt(row.o_after) || 1) * (parseInt(row.d_after) || 1);
 };
 
 const getRpnClass = (rpn) => {
@@ -299,12 +310,73 @@ const submitForm = (submitType) => {
                     <h3 style="font-size:1.1rem;font-weight:800;color:var(--accent-color);border-bottom:1px solid var(--border-color);padding-bottom:12px;margin-bottom:20px;">
                         Deviasi Terkait / Rincian Penyimpangan
                     </h3>
-                    <div class="form-group" style="margin-bottom:0;">
-                        <label class="form-label">Uraian Detail <span style="color:#ef4444;">*</span></label>
+                    
+                    <!-- II. Imbas Bets/Produk Lain -->
+                    <div class="form-group" style="margin-bottom:20px;">
+                        <label class="form-label">II. Apakah ada bets / Produk lain yang terkena imbasnya? <span style="color:#ef4444;">*</span></label>
+                        <div style="display: flex; gap: 20px; align-items: center; margin-bottom: 8px;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9rem; color: var(--text-primary);">
+                                <input type="radio" :value="true" v-model="form.is_other_batch_affected" style="width: 16px; height: 16px; accent-color: var(--accent-color);" />
+                                Ya
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9rem; color: var(--text-primary);">
+                                <input type="radio" :value="false" v-model="form.is_other_batch_affected" style="width: 16px; height: 16px; accent-color: var(--accent-color);" />
+                                Tidak
+                            </label>
+                        </div>
+                        <div v-if="form.is_other_batch_affected" class="fade-in" style="margin-top: 8px;">
+                            <input type="text" v-model="form.other_batch_affected_details" class="form-input"
+                                placeholder="Sebutkan bets/produk lain yang terkena imbas..." required />
+                        </div>
+                    </div>
+
+                    <!-- III. Uraian Penyimpangan -->
+                    <div class="form-group" style="margin-bottom:20px;">
+                        <label class="form-label">III. Uraian Detail (Uraian Penyimpangan) <span style="color:#ef4444;">*</span></label>
                         <textarea id="description" v-model="form.description" class="form-textarea" rows="5"
                             placeholder="Uraikan detail temuan ketidaksesuaian, waktu kejadian, dan dampak awal jika ada..."
                             required></textarea>
                         <div v-if="form.errors.description" style="color:#ef4444;font-size:0.8rem;margin-top:4px;">{{ form.errors.description }}</div>
+                    </div>
+
+                    <!-- IV. Frekuensi Penyimpangan -->
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">IV. Frekuensi Penyimpangan <span style="color:#ef4444;">*</span></label>
+                        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                            <label v-for="freq in ['Sering', 'Jarang', 'Tidak Pernah sebelumnya']" :key="freq" style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9rem; color: var(--text-primary);">
+                                <input type="radio" :value="freq" v-model="form.deviation_frequency" style="width: 16px; height: 16px; accent-color: var(--accent-color);" />
+                                {{ freq }}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ─── B. Rincian Tindakan Sementara (Immediate Action) ──────────────── -->
+                <div class="qms-card">
+                    <h3 style="font-size:1.1rem;font-weight:800;color:var(--accent-color);border-bottom:1px solid var(--border-color);padding-bottom:12px;margin-bottom:20px;">
+                        B. Rincian Tindakan Sementara yang Diambil (Immediate Action)
+                    </h3>
+                    
+                    <!-- I. Penghentian Proses Produksi -->
+                    <div class="form-group" style="margin-bottom:16px;">
+                        <label class="form-label">I. Penghentian Proses Produksi <span style="color:#ef4444;">*</span></label>
+                        <div style="display: flex; gap: 20px; align-items: center;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9rem; color: var(--text-primary);">
+                                <input type="radio" :value="true" v-model="form.is_production_stopped" style="width: 16px; height: 16px; accent-color: var(--accent-color);" />
+                                Ya
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9rem; color: var(--text-primary);">
+                                <input type="radio" :value="false" v-model="form.is_production_stopped" style="width: 16px; height: 16px; accent-color: var(--accent-color);" />
+                                Tidak
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- II. Penanganan Cepat Lain terhadap Produk -->
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">II. Penanganan Cepat Lain Terhadap Produk</label>
+                        <textarea v-model="form.immediate_action_details" class="form-textarea" rows="3"
+                            placeholder="Jelaskan tindakan penanganan cepat lain yang diambil terhadap produk terdampak..."></textarea>
                     </div>
                 </div>
 
@@ -433,16 +505,52 @@ const submitForm = (submitType) => {
                             </div>
                         </div>
 
-                        <div class="grid-2" style="gap:12px;">
+                        <div class="grid-2" style="gap:12px; margin-bottom:12px;">
                             <div class="form-group" style="margin-bottom:0;">
-                                <label class="form-label">Risk Control</label>
+                                <label class="form-label">Corrective (Tindakan Korektif)</label>
                                 <input type="text" v-model="row.risk_control" class="form-input"
-                                    placeholder="Pengendalian risiko yang dilakukan..." />
+                                    placeholder="Tindakan perbaikan segera..." />
                             </div>
                             <div class="form-group" style="margin-bottom:0;">
-                                <label class="form-label">Action (Tindakan)</label>
+                                <label class="form-label">Preventive (Tindakan Pencegahan)</label>
                                 <input type="text" v-model="row.action" class="form-input"
-                                    placeholder="Tindakan korektif / pencegahan..." />
+                                    placeholder="Tindakan pencegahan agar tidak terulang..." />
+                            </div>
+                        </div>
+
+                        <!-- Expected / Residual Risk after corrective/preventive action -->
+                        <div style="margin-top: 16px; border-top: 1px dashed var(--border-color); padding-top: 16px;">
+                            <div style="font-size:0.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:12px;">
+                                Penilaian Risiko Setelah Tindakan (Residual Risk)
+                                <span style="margin-left:12px;font-size:0.8rem;" :class="getRpnClass(row.rpn_after || 1)">
+                                    Expected RPN = {{ row.rpn_after || 1 }}
+                                </span>
+                            </div>
+                            <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">
+                                <div class="form-group" style="margin-bottom:0;min-width:90px;flex:1;">
+                                    <label class="form-label">Expected Severity (S)</label>
+                                    <select v-model.number="row.s_after" class="form-select" @change="updateRpn(row)">
+                                        <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="margin-bottom:0;min-width:90px;flex:1;">
+                                    <label class="form-label">Expected Occurrence (O)</label>
+                                    <select v-model.number="row.o_after" class="form-select" @change="updateRpn(row)">
+                                        <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="margin-bottom:0;min-width:90px;flex:1;">
+                                    <label class="form-label">Expected Detection (D)</label>
+                                    <select v-model.number="row.d_after" class="form-select" @change="updateRpn(row)">
+                                        <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
+                                    </select>
+                                </div>
+                                <div style="min-width:100px;flex:1;text-align:center;padding-bottom:2px;">
+                                    <div style="font-size:0.7rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;margin-bottom:4px;">Expected RPN (S×O×D)</div>
+                                    <div style="font-size:1.6rem;font-weight:900;line-height:1;" :class="getRpnClass(row.rpn_after || 1)">
+                                        {{ row.rpn_after || 1 }}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

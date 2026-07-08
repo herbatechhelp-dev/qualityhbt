@@ -17,6 +17,11 @@ class Deviation extends Model
         'description',
         'jenis_penyimpangan',
         'identifikasi_penyimpangan',
+        'is_other_batch_affected',
+        'other_batch_affected_details',
+        'deviation_frequency',
+        'is_production_stopped',
+        'immediate_action_details',
         'kepala_departemen',
         'attachment_path',
         'attachment_description',
@@ -28,11 +33,13 @@ class Deviation extends Model
     ];
 
     protected $casts = [
-        'jenis_penyimpangan'       => 'array',
-        'identifikasi_penyimpangan' => 'array',
-        'attachments'              => 'array',
-        'risk_analysis'            => 'array',
-        'tanggal_temuan'           => 'date',
+        'jenis_penyimpangan'         => 'array',
+        'identifikasi_penyimpangan'   => 'array',
+        'is_other_batch_affected'    => 'boolean',
+        'is_production_stopped'      => 'boolean',
+        'attachments'                => 'array',
+        'risk_analysis'              => 'array',
+        'tanggal_temuan'             => 'date',
     ];
 
     public function initiator()

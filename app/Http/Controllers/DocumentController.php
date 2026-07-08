@@ -200,6 +200,70 @@ class DocumentController extends Controller
         return redirect()->back()->with('success', 'Documents imported successfully!');
     }
 
+    private function parseHeaderRow($row)
+    {
+        $mapping = [];
+        $reviewIndexes = [];
+        
+        foreach ($row as $index => $val) {
+            $clean = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $val));
+            if (empty($clean)) continue;
+            
+            if (in_array($clean, ['nomordokumen', 'nodokumen', 'nodoc', 'documentnumber', 'docnumber'])) {
+                $mapping['document_number'] = $index;
+            } elseif (in_array($clean, ['noexcel', 'excelno'])) {
+                $mapping['excel_no'] = $index;
+            } elseif (in_array($clean, ['judul', 'title', 'namadokumen', 'judulprotap', 'namaprotap'])) {
+                $mapping['title'] = $index;
+            } elseif (in_array($clean, ['revisi', 'rev', 'revision', 'edisi'])) {
+                $mapping['revision'] = $index;
+            } elseif (in_array($clean, ['perubahan', 'change', 'perubahancc'])) {
+                $mapping['perubahan'] = $index;
+            } elseif (in_array($clean, ['noperubahancc', 'nocc', 'nomorcc', 'changecontrol', 'noperubahan'])) {
+                $mapping['no_perubahan_cc'] = $index;
+            } elseif (in_array($clean, ['tanggalefektif', 'tglefektif', 'effectivedate'])) {
+                $mapping['effective_date'] = $index;
+            } elseif (str_contains($clean, 'review')) {
+                $reviewIndexes[] = $index;
+            } elseif (in_array($clean, ['pengganti', 'replacement'])) {
+                $mapping['pengganti'] = $index;
+            } elseif (in_array($clean, ['lampiran', 'attachment'])) {
+                $mapping['lampiran'] = $index;
+            } elseif (in_array($clean, ['catatanmutu', 'nocatatanmutu', 'no.catatanmutu'])) {
+                $mapping['no_catatan_mutu'] = $index;
+            } elseif (in_array($clean, ['dokumenterkait', 'relateddocument', 'dokumen'])) {
+                $mapping['dokumen_terkait'] = $index;
+            } elseif (in_array($clean, ['tanggalsosialisasi', 'tglsosialisasi', 'socializationdate'])) {
+                $mapping['tgl_sosialisasi'] = $index;
+            } elseif (in_array($clean, ['distribusi', 'distribution'])) {
+                $mapping['distribusi'] = $index;
+            } elseif (in_array($clean, ['nopemusnahan', 'nomorpemusnahan'])) {
+                $mapping['no_pemusnahan'] = $index;
+            } elseif (in_array($clean, ['tanggalpemusnahan', 'tglpemusnahan'])) {
+                $mapping['tgl_pemusnahan'] = $index;
+            } elseif (in_array($clean, ['tempatpenyimpanan', 'penyimpanan', 'lokasi'])) {
+                $mapping['tempat_penyimpanan'] = $index;
+            }
+        }
+        
+        // Also map 'no' as excel_no if we haven't mapped excel_no and it's not the document_number
+        if (!isset($mapping['excel_no'])) {
+            foreach ($row as $index => $val) {
+                $clean = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $val));
+                if ($clean === 'no' && ($mapping['document_number'] ?? -1) !== $index) {
+                    $mapping['excel_no'] = $index;
+                    break;
+                }
+            }
+        }
+
+        if (!empty($reviewIndexes)) {
+            $mapping['review_dates'] = $reviewIndexes;
+        }
+        
+        return $mapping;
+    }
+
     public function syncSheets(Request $request)
     {
         // Only QA or Management can sync
@@ -213,7 +277,16 @@ class DocumentController extends Controller
 
         $type = $request->input('type');
         $spreadsheetId = \App\Models\Setting::getValue('google_spreadsheet_id', env('GOOGLE_SPREADSHEET_ID'));
-        $range = env('GOOGLE_SPREADSHEET_RANGE', 'A6:S');
+        
+        // Fetch from A1 to S to detect headers dynamically from the first rows
+        $range = env('GOOGLE_SPREADSHEET_RANGE', 'A1:S');
+        if (str_contains($range, '!')) {
+            $parts = explode('!', $range);
+            $parts[1] = 'A1:S';
+            $range = implode('!', $parts);
+        } else {
+            $range = 'A1:S';
+        }
 
         if (empty($spreadsheetId)) {
             return back()->withErrors(['sync' => 'GOOGLE_SPREADSHEET_ID is not configured.']);
@@ -230,41 +303,69 @@ class DocumentController extends Controller
                 return back()->withErrors(['sync' => 'The Google Sheet range contains no data.']);
             }
 
-            $rows = [];
-            foreach ($values as $row) {
-                // Document number (Column C / index 2) is required
-                if (empty($row[2])) continue;
+            // Find header row and map columns
+            $headerRowIndex = null;
+            $mapping = [];
 
-                $revVal = trim($row[3] ?? '');
-                $perubahanVal = trim($row[4] ?? '');
+            foreach ($values as $idx => $row) {
+                $testMapping = $this->parseHeaderRow($row);
+                if (isset($testMapping['document_number']) && isset($testMapping['title'])) {
+                    $headerRowIndex = $idx;
+                    $mapping = $testMapping;
+                    break;
+                }
+            }
+
+            // Fallback if header detection failed (start from index 5 assuming headers on row 5/index 4)
+            $startDataIndex = ($headerRowIndex !== null) ? ($headerRowIndex + 1) : 5;
+
+            $rows = [];
+            foreach ($values as $idx => $row) {
+                if ($idx < $startDataIndex) continue;
+
+                $docNumIndex = $mapping['document_number'] ?? 2;
+                if (empty($row[$docNumIndex])) continue;
+
+                // Build revision string
+                $revVal = isset($mapping['revision']) ? trim($row[$mapping['revision']] ?? '') : (trim($row[3] ?? ''));
+                $perubahanVal = isset($mapping['perubahan']) ? trim($row[$mapping['perubahan']] ?? '') : (trim($row[4] ?? ''));
                 $revision = trim($revVal . ($perubahanVal !== '' ? ' - ' . $perubahanVal : ''));
 
-                $penggantiVal = trim($row[10] ?? '');
-                $lampiranVal = trim($row[11] ?? '');
+                // Build pengganti lampiran
+                $penggantiVal = isset($mapping['pengganti']) ? trim($row[$mapping['pengganti']] ?? '') : (trim($row[10] ?? ''));
+                $lampiranVal = isset($mapping['lampiran']) ? trim($row[$mapping['lampiran']] ?? '') : (trim($row[11] ?? ''));
                 $penggantiLampiran = trim($penggantiVal . ($lampiranVal !== '' ? ' - ' . $lampiranVal : ''));
 
-                $dateH = $this->formatDate($row[7] ?? null);
-                $dateI = $this->formatDate($row[8] ?? null);
-                $dateJ = $this->formatDate($row[9] ?? null);
-                $reviewDates = array_values(array_filter([$dateH, $dateI, $dateJ]));
+                // Build review dates
+                $reviewDates = [];
+                if (isset($mapping['review_dates'])) {
+                    foreach ($mapping['review_dates'] as $dateIndex) {
+                        $reviewDates[] = $this->formatDate($row[$dateIndex] ?? null);
+                    }
+                } else {
+                    $reviewDates[] = $this->formatDate($row[7] ?? null);
+                    $reviewDates[] = $this->formatDate($row[8] ?? null);
+                    $reviewDates[] = $this->formatDate($row[9] ?? null);
+                }
+                $reviewDates = array_values(array_filter($reviewDates));
 
                 $rows[] = [
-                    'excel_no'           => trim($row[0] ?? ''),
-                    'title'              => trim($row[1] ?? ''),
-                    'document_number'    => trim($row[2]),
+                    'excel_no'           => trim($row[$mapping['excel_no'] ?? 0] ?? ''),
+                    'title'              => trim($row[$mapping['title'] ?? 1] ?? ''),
+                    'document_number'    => trim($row[$docNumIndex]),
                     'revision'           => $revision,
-                    'no_perubahan_cc'    => trim($row[5] ?? ''),
-                    'effective_date'     => $this->formatDate($row[6] ?? null),
+                    'no_perubahan_cc'    => trim($row[$mapping['no_perubahan_cc'] ?? 5] ?? ''),
+                    'effective_date'     => $this->formatDate($row[$mapping['effective_date'] ?? 6] ?? null),
                     'tgl_review'         => $reviewDates[0] ?? null,
                     'tgl_review_2'       => $reviewDates[1] ?? null,
                     'pengganti_lampiran' => $penggantiLampiran,
-                    'no_catatan_mutu'    => trim($row[12] ?? ''),
-                    'dokumen_terkait'    => trim($row[13] ?? ''),
-                    'tgl_sosialisasi'    => $this->formatDate($row[14] ?? null),
-                    'distribusi'         => trim($row[15] ?? ''),
-                    'no_pemusnahan'      => trim($row[16] ?? ''),
-                    'tgl_pemusnahan'     => $this->formatDate($row[17] ?? null),
-                    'tempat_penyimpanan' => trim($row[18] ?? ''),
+                    'no_catatan_mutu'    => trim($row[$mapping['no_catatan_mutu'] ?? 12] ?? ''),
+                    'dokumen_terkait'    => trim($row[$mapping['dokumen_terkait'] ?? 13] ?? ''),
+                    'tgl_sosialisasi'    => $this->formatDate($row[$mapping['tgl_sosialisasi'] ?? 14] ?? null),
+                    'distribusi'         => trim($row[$mapping['distribusi'] ?? 15] ?? ''),
+                    'no_pemusnahan'      => trim($row[$mapping['no_pemusnahan'] ?? 16] ?? ''),
+                    'tgl_pemusnahan'     => $this->formatDate($row[$mapping['tgl_pemusnahan'] ?? 17] ?? null),
+                    'tempat_penyimpanan' => trim($row[$mapping['tempat_penyimpanan'] ?? 18] ?? ''),
                     'type'               => $type,
                     'status'             => 'Active',
                 ];

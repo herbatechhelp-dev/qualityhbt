@@ -17,4 +17,20 @@ export default defineConfig({
             },
         }),
     ],
+    build: {
+        rollupOptions: {
+            output: {
+                sanitizeFileName(name) {
+                    const match = /^[a-z]:/i.exec(name);
+                    const driveLetter = match ? match[0] : '';
+                    return (
+                        driveLetter +
+                        name.slice(driveLetter.length)
+                            .replace(/[\x00-\x1F\x7F<>*#{}|^[\]`;?:&=+$,]/g, '')
+                            .replace(/^_/, '')
+                    );
+                },
+            },
+        },
+    },
 });

@@ -170,7 +170,7 @@ const getStatusClass = (status) => {
                             <th>Inisiator</th>
                             <th>PIC</th>
                             <th>Departemen</th>
-                            <th>RPN</th>
+
                             <th>Status</th>
                             <th>Tanggal Pengajuan</th>
                             <th>Aksi</th>
@@ -178,7 +178,7 @@ const getStatusClass = (status) => {
                     </thead>
                     <tbody>
                         <tr v-if="changeRequests.data.length === 0">
-                            <td colspan="10" style="text-align: center; color: var(--text-muted); padding: 32px;">
+                            <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 32px;">
                                 {{ isInitiator ? 'Anda belum memiliki Change Request. Klik "Tambah Data Baru" untuk membuat.' : 'Tidak ada data Change Request.' }}
                             </td>
                         </tr>
@@ -212,9 +212,7 @@ const getStatusClass = (status) => {
                                 </span>
                             </td>
                             <td>{{ cr.department }}</td>
-                            <td style="font-weight: 600;">
-                                {{ cr.type === 'CRA' ? cr.rpn : '-' }}
-                            </td>
+
                             <td>
                                 <span class="status-badge" :class="getStatusClass(cr.status)">
                                     {{ cr.status }}

@@ -505,19 +505,6 @@ const getStatusClass = (status) => {
                                 <span style="font-size: 0.775rem; color: var(--text-muted); display: block; font-weight: 600;">ANALISIS DAMPAK DAN PENILAIAN RESIKO</span>
                                 <p style="color: var(--text-primary); margin-top: 4px; line-height: 1.5; white-space: pre-line;">{{ changeRequest.analisis_dampak }}</p>
                             </div>
-
-                            <!-- FMEA Parameters & RPN Score (CRA Only) -->
-                            <div v-if="changeRequest.type === 'CRA'" style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center; border: 1px dashed var(--border-color); padding: 12px 16px; border-radius: 8px; background-color: var(--bg-secondary); margin-top: 8px;">
-                                <div class="grid-3" style="flex-grow: 1; font-size: 0.85rem;">
-                                    <div>Keparahan (S): <strong>{{ changeRequest.severity }}</strong></div>
-                                    <div>Keterjadian (O): <strong>{{ changeRequest.occurrence }}</strong></div>
-                                    <div>Deteksi (D): <strong>{{ changeRequest.detection }}</strong></div>
-                                </div>
-                                <div style="text-align: right;">
-                                    <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: bold;">Score RPN</div>
-                                    <div style="font-size: 1.5rem; font-weight: 800; color: var(--accent-color);">{{ changeRequest.rpn }}</div>
-                                </div>
-                            </div>
                         </div>
 
                         <!-- Attachment Section -->

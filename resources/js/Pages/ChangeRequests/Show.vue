@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
@@ -131,7 +131,10 @@ const defaultVerificationData = {
     qa_3: {
         no_pengendalian: 'CTRL/' + props.changeRequest.cr_number,
         implementations: [],
-        verifikasi_completed: false
+        verifikasi_completed: false,
+        dokumen_dibuat_direvisi: false,
+        surat_persetujuan_bpom: false,
+        surat_pemberitahuan_bpom: false
     }
 };
 
@@ -190,6 +193,14 @@ const submitDraftUpdate = (submitType) => {
 
 const submitQaEvaluation = () => {
     qaForm.post(route('change-requests.evaluate', props.changeRequest.id));
+};
+
+const saveAndGoNext = (nextTab) => {
+    qaForm.post(route('change-requests.evaluate', props.changeRequest.id), {
+        onSuccess: () => {
+            activeQaTab.value = nextTab;
+        }
+    });
 };
 
 const submitToManagement = () => {
@@ -786,6 +797,19 @@ const getStatusClass = (status) => {
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Save & Lanjut button (Tab 2) -->
+                            <div style="display: flex; justify-content: flex-end; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                                <button
+                                    type="button"
+                                    @click="saveAndGoNext('qa_3')"
+                                    class="btn btn-primary"
+                                    :disabled="qaForm.processing"
+                                    style="display: inline-flex; align-items: center; gap: 8px;"
+                                >
+                                    Simpan & Lanjut ke Verifikasi Ke-3 →
+                                </button>
+                            </div>
                         </div>
 
                         <!-- Tab 3 Panel -->
@@ -863,6 +887,31 @@ const getStatusClass = (status) => {
                                     <input type="checkbox" id="verifikasi_completed" v-model="qaForm.qa_verification_data.qa_3.verifikasi_completed" />
                                     <label for="verifikasi_completed" style="margin-bottom: 0;">Implementasi perubahan sudah dilakukan</label>
                                 </div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="checkbox" id="dokumen_dibuat_direvisi" v-model="qaForm.qa_verification_data.qa_3.dokumen_dibuat_direvisi" />
+                                    <label for="dokumen_dibuat_direvisi" style="margin-bottom: 0;">Semua dokumen yang diperlukan sudah dibuat/direvisi</label>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="checkbox" id="surat_persetujuan_bpom" v-model="qaForm.qa_verification_data.qa_3.surat_persetujuan_bpom" />
+                                    <label for="surat_persetujuan_bpom" style="margin-bottom: 0;">Surat Persetujuan dari Badan POM sudah diterima</label>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="checkbox" id="surat_pemberitahuan_bpom" v-model="qaForm.qa_verification_data.qa_3.surat_pemberitahuan_bpom" />
+                                    <label for="surat_pemberitahuan_bpom" style="margin-bottom: 0;">Surat pemberitahuan kepada Badan POM sudah dikirim</label>
+                                </div>
+                            </div>
+
+                            <!-- Save button (Tab 3) -->
+                            <div style="display: flex; justify-content: flex-end; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                                <button
+                                    type="button"
+                                    @click="submitQaEvaluation()"
+                                    class="btn btn-primary"
+                                    :disabled="qaForm.processing"
+                                    style="display: inline-flex; align-items: center; gap: 8px;"
+                                >
+                                    Simpan Verifikasi Ke-3
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -1017,8 +1066,13 @@ const getStatusClass = (status) => {
                                 </div>
                             </div>
                             <div style="border-top: 1px solid var(--border-color); padding-top: 12px;">
-                                <span style="font-size: 0.775rem; color: var(--text-muted); display: block;">Verifikasi Akhir</span>
-                                <strong>{{ changeRequest.qa_verification_data.qa_3.verifikasi_completed ? 'Implementasi perubahan sudah dilakukan ✓' : 'Implementasi perubahan belum dilakukan ✗' }}</strong>
+                                <span style="font-size: 0.775rem; color: var(--text-muted); display: block; font-weight: 600; margin-bottom: 8px;">Verifikasi Akhir</span>
+                                <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.875rem;">
+                                    <div>{{ changeRequest.qa_verification_data.qa_3.verifikasi_completed ? '✅' : '❌' }} Implementasi perubahan sudah dilakukan</div>
+                                    <div>{{ changeRequest.qa_verification_data.qa_3.dokumen_dibuat_direvisi ? '✅' : '❌' }} Semua dokumen yang diperlukan sudah dibuat/direvisi</div>
+                                    <div>{{ changeRequest.qa_verification_data.qa_3.surat_persetujuan_bpom ? '✅' : '❌' }} Surat Persetujuan dari Badan POM sudah diterima</div>
+                                    <div>{{ changeRequest.qa_verification_data.qa_3.surat_pemberitahuan_bpom ? '✅' : '❌' }} Surat pemberitahuan kepada Badan POM sudah dikirim</div>
+                                </div>
                             </div>
                         </div>
                     </div>

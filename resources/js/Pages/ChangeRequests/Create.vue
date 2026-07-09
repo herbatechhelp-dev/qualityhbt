@@ -150,6 +150,43 @@ const submitForm = (submitType) => {
                         </div>
                     </div>
 
+                    <!-- FMEA Parameters (CRA Only) -->
+                    <div v-if="form.type === 'CRA'" style="border-top: 1px solid var(--border-color); padding-top: 16px;">
+                        <label class="form-label" style="font-weight: 600;">Penilaian Parameter Risiko FMEA (Skala 1 - 10)</label>
+                        <div class="grid-3" style="margin-bottom: 12px;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="severity" class="form-label">Severity (Keparahan)</label>
+                                <select id="severity" v-model.number="form.severity" class="form-select">
+                                    <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
+                                </select>
+                                <div v-if="form.errors.severity" style="color: #ef4444; font-size: 0.8rem; margin-top: 4px;">
+                                    {{ form.errors.severity }}
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="occurrence" class="form-label">Occurrence (Keterjadian)</label>
+                                <select id="occurrence" v-model.number="form.occurrence" class="form-select">
+                                    <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
+                                </select>
+                                <div v-if="form.errors.occurrence" style="color: #ef4444; font-size: 0.8rem; margin-top: 4px;">
+                                    {{ form.errors.occurrence }}
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="detection" class="form-label">Detection (Deteksi)</label>
+                                <select id="detection" v-model.number="form.detection" class="form-select">
+                                    <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
+                                </select>
+                                <div v-if="form.errors.detection" style="color: #ef4444; font-size: 0.8rem; margin-top: 4px;">
+                                    {{ form.errors.detection }}
+                                </div>
+                            </div>
+                        </div>
+                        <div style="font-size: 0.9rem; font-weight: bold; color: var(--text-primary);">
+                            RPN (S × O × D) = <strong style="color: var(--accent-color);">{{ form.severity * form.occurrence * form.detection }}</strong>
+                        </div>
+                    </div>
+
                 </div>
 
                 <!-- Attachment Files -->

@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
@@ -117,7 +117,8 @@ const defaultVerificationData = {
         submitted: false,
         hu_approved: 'PENDING',
         om_approved: 'PENDING',
-        gm_approved: 'PENDING'
+        gm_approved: 'PENDING',
+        assessments: []
     },
     qa_2: {
         no_registrasi: 'REG/' + props.changeRequest.cr_number,
@@ -150,6 +151,7 @@ const initialVerificationData = props.changeRequest.qa_verification_data
         qa_1: { 
             ...defaultVerificationData.qa_1, 
             ...(props.changeRequest.qa_verification_data.qa_1 || {}),
+            assessments: props.changeRequest.qa_verification_data.qa_1?.assessments || [],
             submitted: !!props.changeRequest.qa_verification_data.qa_1?.submitted,
             hu_approved: mapApprovals(props.changeRequest.qa_verification_data.qa_1?.hu_approved),
             om_approved: mapApprovals(props.changeRequest.qa_verification_data.qa_1?.om_approved),
@@ -172,6 +174,66 @@ const qaForm = useForm({
 });
 
 const isEditingDraft = ref(false);
+
+const selectedPicForKajian = ref('');
+const addPicForKajian = () => {
+    if (!selectedPicForKajian.value) return;
+    if (!qaForm.qa_verification_data.qa_1.assessments) {
+        qaForm.qa_verification_data.qa_1.assessments = [];
+    }
+    const exists = qaForm.qa_verification_data.qa_1.assessments.some(a => a.user_id === selectedPicForKajian.value.id);
+    if (exists) {
+        alert('PIC tersebut sudah ditambahkan.');
+        return;
+    }
+    qaForm.qa_verification_data.qa_1.assessments.push({
+        user_id: selectedPicForKajian.value.id,
+        name: selectedPicForKajian.value.name,
+        tanggal: null,
+        kajian: '',
+        paraf: false
+    });
+    selectedPicForKajian.value = '';
+};
+
+const removePicForKajian = (index) => {
+    qaForm.qa_verification_data.qa_1.assessments.splice(index, 1);
+};
+
+const myAssessmentIndex = computed(() => {
+    if (!props.changeRequest.qa_verification_data?.qa_1?.assessments) return -1;
+    return props.changeRequest.qa_verification_data.qa_1.assessments.findIndex(
+        a => a.user_id === currentUser.id
+    );
+});
+
+const myAssessment = computed(() => {
+    const idx = myAssessmentIndex.value;
+    if (idx === -1) return null;
+    return props.changeRequest.qa_verification_data.qa_1.assessments[idx];
+});
+
+const myAssessmentForm = useForm({
+    kajian: myAssessment.value?.kajian || '',
+    tanggal: myAssessment.value?.tanggal || new Date().toISOString().substr(0, 10),
+    paraf: !!myAssessment.value?.paraf,
+});
+
+watch(
+    () => myAssessment.value,
+    (newVal) => {
+        if (newVal) {
+            myAssessmentForm.kajian = newVal.kajian || '';
+            myAssessmentForm.tanggal = newVal.tanggal || new Date().toISOString().substr(0, 10);
+            myAssessmentForm.paraf = !!newVal.paraf;
+        }
+    },
+    { deep: true }
+);
+
+const submitMyAssessment = () => {
+    myAssessmentForm.post(route('change-requests.submit-assessment', props.changeRequest.id));
+};
 
 const toggleEditDraft = () => {
     isEditingDraft.value = !isEditingDraft.value;
@@ -539,6 +601,40 @@ const getStatusClass = (status) => {
                         </div>
                     </div>
 
+                    <!-- Form Pengkajian PIC Terkait -->
+                    <div v-if="myAssessment" class="qms-card" style="border-top: 4px solid var(--success-color); background: rgba(16, 185, 129, 0.01); margin-bottom: 24px;">
+                        <h3 style="font-size: 1.15rem; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px; color: var(--success-color); display: flex; align-items: center; gap: 8px;">
+                            ✍️ Form Pengkajian PIC Terkait ({{ myAssessment.name }})
+                        </h3>
+                        <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5;">
+                            Anda telah ditunjuk oleh QA untuk memberikan pengkajian/tanggapan terkait usulan Change Request ini. Silakan isi kajian teknis Anda di bawah.
+                        </p>
+                        
+                        <form @submit.prevent="submitMyAssessment" style="display: flex; flex-direction: column; gap: 16px;">
+                            <div class="form-group">
+                                <label class="form-label" style="font-weight: 600;">Isi Kajian / Review Teknis <span style="color: red;">*</span></label>
+                                <textarea v-model="myAssessmentForm.kajian" class="form-textarea" rows="3" required placeholder="Tuliskan ulasan pengerjaan, alokasi kebutuhan, atau rekomendasi teknis Anda..."></textarea>
+                            </div>
+                            
+                            <div class="grid-2" style="gap: 16px;">
+                                <div class="form-group">
+                                    <label class="form-label" style="font-weight: 600;">Tanggal Pengkajian <span style="color: red;">*</span></label>
+                                    <input type="date" v-model="myAssessmentForm.tanggal" class="form-input" required />
+                                </div>
+                                <div class="form-group" style="display: flex; align-items: center; gap: 8px; margin-top: 28px;">
+                                    <input type="checkbox" id="my_paraf" v-model="myAssessmentForm.paraf" style="width: 18px; height: 18px; cursor: pointer;" />
+                                    <label for="my_paraf" style="font-weight: 600; margin-bottom: 0; cursor: pointer; color: var(--text-primary);">Paraf / Konfirmasi Selesai</label>
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
+                                <button type="submit" class="btn btn-success" style="padding: 10px 20px; font-weight: 600; background-color: var(--success-color); border-color: var(--success-color); color: white;" :disabled="myAssessmentForm.processing">
+                                    {{ myAssessmentForm.processing ? 'Menyimpan...' : '💾 Simpan & Paraf Pengkajian' }}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
                     <!-- Multi-Stage QA Verification Form (Editable for QA Role) -->
                     <div v-if="showEvaluateCard" class="qms-card" style="border-top: 4px solid var(--accent-color);">
                         <h3 style="font-size: 1.15rem; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px; color: var(--accent-color);">
@@ -570,6 +666,69 @@ const getStatusClass = (status) => {
                             <div class="form-group" style="margin-bottom: 12px;">
                                 <label class="form-label">QA/Admin Departemen Terkait Menilai Pengerjaan</label>
                                 <textarea v-model="qaForm.qa_verification_data.qa_1.ulasan" class="form-textarea" rows="3" placeholder="Tuliskan ulasan pengerjaan di sini..."></textarea>
+                            </div>
+
+                            <!-- Penunjukan PIC Terkait untuk Pengkajian (Tanda Merah area) -->
+                            <div class="form-group" style="margin-bottom: 16px; padding: 16px; border: 2px solid #ef4444; border-radius: 8px; background: rgba(239, 68, 68, 0.02);">
+                                <label class="form-label" style="font-weight: 700; color: #ef4444; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                                    📌 Penunjukan PIC Terkait untuk Pengkajian
+                                </label>
+                                <div v-if="!qaForm.qa_verification_data.qa_1.submitted" style="display: flex; gap: 8px; margin-bottom: 12px;">
+                                    <select v-model="selectedPicForKajian" class="form-select" style="flex-grow: 1;">
+                                        <option value="">-- Pilih PIC Pengkaji --</option>
+                                        <option v-for="u in users" :key="u.id" :value="u">
+                                            {{ u.name }} ({{ u.role.toUpperCase() }})
+                                        </option>
+                                    </select>
+                                    <button type="button" @click="addPicForKajian" class="btn btn-secondary" style="white-space: nowrap; background-color: var(--accent-color); color: white; border-color: var(--accent-color);">
+                                        + Tambah PIC
+                                    </button>
+                                </div>
+                                
+                                <!-- PICs list to show who is assigned -->
+                                <div v-if="qaForm.qa_verification_data.qa_1.assessments && qaForm.qa_verification_data.qa_1.assessments.length > 0" style="display: flex; flex-direction: column; gap: 8px;">
+                                    <div v-for="(assessment, index) in qaForm.qa_verification_data.qa_1.assessments" :key="index" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 6px;">
+                                        <div>
+                                            <strong style="color: var(--text-primary);">{{ assessment.name }}</strong>
+                                            <span class="status-badge" :class="assessment.paraf ? 'badge-approved' : 'badge-open'" style="margin-left: 8px; font-size: 0.75rem;">
+                                                {{ assessment.paraf ? 'Selesai Dikaji ✓' : 'Menunggu Pengkajian ⏳' }}
+                                            </span>
+                                        </div>
+                                        <button v-if="!qaForm.qa_verification_data.qa_1.submitted" type="button" @click="removePicForKajian(index)" class="btn btn-danger" style="padding: 2px 8px; font-size: 0.75rem;">
+                                            Hapus
+                                        </button>
+                                    </div>
+                                </div>
+                                <div v-else style="font-size: 0.85rem; color: var(--text-muted); font-style: italic;">
+                                    Belum ada PIC yang ditunjuk untuk pengkajian. Silakan pilih dari dropdown di atas.
+                                </div>
+                            </div>
+
+                            <!-- Table Pengkajian PIC Terkait (Hasil) -->
+                            <div v-if="qaForm.qa_verification_data.qa_1.assessments && qaForm.qa_verification_data.qa_1.assessments.length > 0" style="margin-top: 12px; margin-bottom: 16px;">
+                                <label class="form-label" style="font-weight: 600; color: var(--accent-color);">Hasil Pengkajian PIC Terkait</label>
+                                <div class="table-wrapper" style="overflow-x: auto; margin-top: 8px;">
+                                    <table class="qms-table" style="width: 100%;">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 25%;">PIC Pengkaji</th>
+                                                <th style="width: 20%; text-align: center;">Tanggal</th>
+                                                <th>Kajian</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="(ast, idx) in qaForm.qa_verification_data.qa_1.assessments" :key="idx">
+                                                <td>
+                                                    <strong>{{ ast.name }}</strong>
+                                                    <span v-if="ast.paraf" style="color: var(--success-color); margin-left: 8px; font-size: 0.8rem;">✓</span>
+                                                    <span v-else style="color: var(--warning-color); margin-left: 8px; font-size: 0.8rem;">⏳</span>
+                                                </td>
+                                                <td style="text-align: center;">{{ ast.tanggal || '-' }}</td>
+                                                <td style="white-space: pre-wrap;">{{ ast.kajian || '-' }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                             
                             <!-- Table Ulasan Reviewer -->
@@ -935,6 +1094,33 @@ const getStatusClass = (status) => {
                             <div>
                                 <span style="font-size: 0.775rem; color: var(--text-muted); display: block;">Reviewer</span>
                                 <p style="color: var(--text-primary); margin-top: 4px;">{{ changeRequest.qa_verification_data.qa_1.diulas_oleh || '-' }} ({{ new Date(changeRequest.qa_verification_data.qa_1.tanggal).toLocaleDateString('id-ID') }})</p>
+                            </div>
+                            
+                            <!-- Table Pengkajian PIC Terkait (Hasil Read-only) -->
+                            <div v-if="changeRequest.qa_verification_data.qa_1.assessments && changeRequest.qa_verification_data.qa_1.assessments.length > 0" style="margin-top: 12px; margin-bottom: 12px;">
+                                <span style="font-size: 0.775rem; color: var(--text-muted); display: block; margin-bottom: 8px; font-weight: 600;">PENGKAJIAN PIC DEPARTEMEN TERKAIT</span>
+                                <div class="table-wrapper" style="overflow-x: auto;">
+                                    <table class="qms-table" style="width: 100%;">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 25%;">PIC Pengkaji</th>
+                                                <th style="width: 20%; text-align: center;">Tanggal</th>
+                                                <th>Kajian</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="(ast, idx) in changeRequest.qa_verification_data.qa_1.assessments" :key="idx">
+                                                <td>
+                                                    <strong>{{ ast.name }}</strong>
+                                                    <span v-if="ast.paraf" style="color: var(--success-color); margin-left: 8px; font-size: 0.8rem;">✓ Terkonfirmasi</span>
+                                                    <span v-else style="color: var(--warning-color); margin-left: 8px; font-size: 0.8rem;">⏳ Menunggu</span>
+                                                </td>
+                                                <td style="text-align: center;">{{ ast.tanggal || '-' }}</td>
+                                                <td style="white-space: pre-wrap;">{{ ast.kajian || '-' }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                             <div v-if="changeRequest.qa_verification_data.qa_1.submitted" style="display: flex; gap: 24px; border-top: 1px solid var(--border-color); padding-top: 12px; flex-wrap: wrap; align-items: center;">
                                 <div>HU Approval: 

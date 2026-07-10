@@ -1,1 +1,0 @@
-import o from"./AuthContainer-CW5e5tUS.js";import{c as a,o as r}from"./app-Bi__LFeN.js";import"./plugin-vueexport-helper-DlAUqK2U.js";import"./FeedbackOverlay-Do-hMZ2M.js";const c={__name:"Login",props:{status:{type:String,default:""}},setup(t){return(s,e)=>(r(),a(o,{"initial-mode":"login",status:t.status},null,8,["status"]))}};export{c as default};

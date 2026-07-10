@@ -41,11 +41,19 @@ Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
             'documents_count' => MasterDocument::count(),
             'cr_open_count' => ChangeRequest::where(function($q) use ($user) {
                 $q->where('initiator_id', $user->id)
-                  ->orWhere('pic_id', $user->id);
+                  ->orWhere('pic_id', $user->id)
+                  ->orWhereJsonContains('qa_verification_data->qa_1->assessments', ['user_id' => $user->id])
+                  ->orWhereJsonContains('qa_verification_data->qa_1->assessments', [['user_id' => $user->id]])
+                  ->orWhere('qa_verification_data', 'like', '%"user_id":' . $user->id . '%')
+                  ->orWhere('qa_verification_data', 'like', '%"user_id": ' . $user->id . '%');
             })->where('status', 'OPEN')->count(),
             'cr_total_count' => ChangeRequest::where(function($q) use ($user) {
                 $q->where('initiator_id', $user->id)
-                  ->orWhere('pic_id', $user->id);
+                  ->orWhere('pic_id', $user->id)
+                  ->orWhereJsonContains('qa_verification_data->qa_1->assessments', ['user_id' => $user->id])
+                  ->orWhereJsonContains('qa_verification_data->qa_1->assessments', [['user_id' => $user->id]])
+                  ->orWhere('qa_verification_data', 'like', '%"user_id":' . $user->id . '%')
+                  ->orWhere('qa_verification_data', 'like', '%"user_id": ' . $user->id . '%');
             })->count(),
             'deviations_pending_count' => Deviation::where('initiator_id', $user->id)->where('status', 'OPEN')->count(),
             'deviations_total_count' => Deviation::where('initiator_id', $user->id)->count(),
@@ -63,9 +71,13 @@ Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
         $recentCr = ChangeRequest::with(['initiator', 'pic'])
             ->where(function($q) use ($user) {
                 $q->where('initiator_id', $user->id)
-                  ->orWhere('pic_id', $user->id);
+                  ->orWhere('pic_id', $user->id)
+                  ->orWhereJsonContains('qa_verification_data->qa_1->assessments', ['user_id' => $user->id])
+                  ->orWhereJsonContains('qa_verification_data->qa_1->assessments', [['user_id' => $user->id]])
+                  ->orWhere('qa_verification_data', 'like', '%"user_id":' . $user->id . '%')
+                  ->orWhere('qa_verification_data', 'like', '%"user_id": ' . $user->id . '%');
             })->orderBy('created_at', 'desc')->take(5)->get();
-
+        
         $recentDeviations = Deviation::with(['initiator'])
             ->where('initiator_id', $user->id)
             ->orderBy('created_at', 'desc')->take(5)->get();
@@ -129,6 +141,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/change-requests/{changeRequest}', [ChangeRequestController::class, 'show'])->name('change-requests.show');
     Route::post('/change-requests/{changeRequest}', [ChangeRequestController::class, 'update'])->name('change-requests.update');
     Route::post('/change-requests/{changeRequest}/evaluate', [ChangeRequestController::class, 'evaluate'])->name('change-requests.evaluate');
+    Route::post('/change-requests/{changeRequest}/assessment', [ChangeRequestController::class, 'submitAssessment'])->name('change-requests.submit-assessment');
     Route::get('/change-requests/{changeRequest}/print', [ChangeRequestController::class, 'print'])->name('change-requests.print');
     Route::delete('/change-requests/{changeRequest}/attachment', [ChangeRequestController::class, 'destroyAttachment'])->name('change-requests.destroy-attachment');
 

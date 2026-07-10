@@ -15,17 +15,25 @@ class ChangeRequestController extends Controller
         $user = $request->user();
         $query = ChangeRequest::with(['initiator', 'pic']);
 
-        // Initiator hanya bisa melihat CR miliknya sendiri atau di mana ia sebagai PIC
+        // Initiator hanya bisa melihat CR miliknya sendiri atau di mana ia sebagai PIC atau ditunjuk di assessments
         if ($user->role === 'initiator') {
             $query->where(function($q) use ($user) {
                 $q->where('initiator_id', $user->id)
-                  ->orWhere('pic_id', $user->id);
+                  ->orWhere('pic_id', $user->id)
+                  ->orWhereJsonContains('qa_verification_data->qa_1->assessments', ['user_id' => $user->id])
+                  ->orWhereJsonContains('qa_verification_data->qa_1->assessments', [['user_id' => $user->id]])
+                  ->orWhere('qa_verification_data', 'like', '%"user_id":' . $user->id . '%')
+                  ->orWhere('qa_verification_data', 'like', '%"user_id": ' . $user->id . '%');
             });
         } elseif (in_array($user->role, ['head_of_quality', 'operational_manager', 'general_manager'])) {
-            // Management: lihat CR miliknya, di mana ia PIC, ATAU yang sudah diajukan oleh QA (submitted = true)
+            // Management: lihat CR miliknya, di mana ia PIC, ATAU yang sudah diajukan oleh QA (submitted = true) atau ditunjuk di assessments
             $query->where(function($q) use ($user) {
                 $q->where('initiator_id', $user->id)
                   ->orWhere('pic_id', $user->id)
+                  ->orWhereJsonContains('qa_verification_data->qa_1->assessments', ['user_id' => $user->id])
+                  ->orWhereJsonContains('qa_verification_data->qa_1->assessments', [['user_id' => $user->id]])
+                  ->orWhere('qa_verification_data', 'like', '%"user_id":' . $user->id . '%')
+                  ->orWhere('qa_verification_data', 'like', '%"user_id": ' . $user->id . '%')
                   ->orWhere(function($sub) {
                       $sub->where('status', '!=', 'DRAFT')
                           ->where('qa_verification_data->qa_1->submitted', true);
@@ -174,7 +182,18 @@ class ChangeRequestController extends Controller
     public function show(ChangeRequest $changeRequest)
     {
         $user = auth()->user();
-        if ($user->role === 'initiator' && $changeRequest->initiator_id !== $user->id && $changeRequest->pic_id !== $user->id) {
+        
+        $isAssessor = false;
+        if (isset($changeRequest->qa_verification_data['qa_1']['assessments'])) {
+            foreach ($changeRequest->qa_verification_data['qa_1']['assessments'] as $ast) {
+                if (($ast['user_id'] ?? null) == $user->id) {
+                    $isAssessor = true;
+                    break;
+                }
+            }
+        }
+
+        if ($user->role === 'initiator' && $changeRequest->initiator_id !== $user->id && $changeRequest->pic_id !== $user->id && !$isAssessor) {
             abort(403, 'Unauthorized. Anda tidak memiliki akses ke Change Request ini.');
         }
 
@@ -403,10 +422,61 @@ class ChangeRequestController extends Controller
         return redirect()->route('change-requests.show', $changeRequest->id)->with('success', 'Change Request evaluation updated!');
     }
 
+    public function submitAssessment(Request $request, ChangeRequest $changeRequest)
+    {
+        $user = $request->user();
+        
+        $request->validate([
+            'kajian' => 'required|string',
+            'paraf' => 'required|boolean',
+            'tanggal' => 'required|date',
+        ]);
+
+        $data = $changeRequest->qa_verification_data ?? [];
+        if (!isset($data['qa_1'])) {
+            $data['qa_1'] = [];
+        }
+        if (!isset($data['qa_1']['assessments'])) {
+            $data['qa_1']['assessments'] = [];
+        }
+
+        $found = false;
+        foreach ($data['qa_1']['assessments'] as $key => $assessment) {
+            if (($assessment['user_id'] ?? null) == $user->id) {
+                $data['qa_1']['assessments'][$key]['kajian'] = $request->kajian;
+                $data['qa_1']['assessments'][$key]['paraf'] = $request->paraf;
+                $data['qa_1']['assessments'][$key]['tanggal'] = $request->tanggal;
+                $found = true;
+                break;
+            }
+        }
+
+        if (!$found) {
+            abort(403, 'Anda tidak ditunjuk untuk melakukan pengkajian pada Change Request ini.');
+        }
+
+        $changeRequest->update([
+            'qa_verification_data' => $data,
+        ]);
+
+        return redirect()->back()->with('success', 'Pengkajian berhasil disimpan!');
+    }
+
     public function print(ChangeRequest $changeRequest)
     {
         $user = auth()->user();
-        if ($user->role === 'initiator' && $changeRequest->initiator_id !== $user->id && $changeRequest->pic_id !== $user->id) {
+        
+        $isAssessor = false;
+        if (isset($changeRequest->qa_verification_data['qa_1']['assessments'])) {
+            foreach ($changeRequest->qa_verification_data['qa_1']['assessments'] as $ast) {
+                if (($ast['user_id'] ?? null) == $user->id) {
+                    $isAssessor = true;
+                    break;
+                }
+            }
+        }
+
+        if ($user->role === 'initiator' && $changeRequest->initiator_id !== $user->id && $changeRequest->pic_id !== $user->id && !$isAssessor) {
             abort(403, 'Unauthorized.');
         }
 

@@ -507,23 +507,43 @@
                     {{ $qa1['ulasan'] ?? '-' }}
                 </td>
             </tr>
+            <!-- Extra Blank/Dynamic Kajian Rows as in paper template -->
+            @php
+                $assessments = $qa1['assessments'] ?? [];
+                $maxExtraRows = 3;
+                $printedExtra = 0;
+            @endphp
             
-            <!-- Extra Blank Kajian Rows as in paper template -->
-            <tr style="height: 100px;">
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr style="height: 100px;">
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr style="height: 100px;">
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
+            @foreach($assessments as $ast)
+                <tr style="height: 100px;">
+                    <td>
+                        <strong>{{ $ast['name'] ?? '-' }}</strong><br>
+                        <span style="font-size: 8px; color: #4b5563;">
+                            PIC Pengkaji 
+                            @if(!empty($ast['paraf']))
+                                (Paraf/Setuju)
+                            @else
+                                (Belum Paraf)
+                            @endif
+                        </span>
+                    </td>
+                    <td style="text-align: center;">
+                        {{ !empty($ast['tanggal']) ? \Carbon\Carbon::parse($ast['tanggal'])->format('d/m/Y') : '-' }}
+                    </td>
+                    <td>
+                        {{ $ast['kajian'] ?? '-' }}
+                    </td>
+                </tr>
+                @php $printedExtra++; @endphp
+            @endforeach
+            
+            @for($i = $printedExtra; $i < $maxExtraRows; $i++)
+                <tr style="height: 100px;">
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            @endfor
         </table>
 
         <!-- Approval Box -->

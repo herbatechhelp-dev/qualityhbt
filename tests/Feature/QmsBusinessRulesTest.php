@@ -791,4 +791,59 @@ class QmsBusinessRulesTest extends TestCase
         $this->assertEquals(2, $pagePropsQA['stats']['cr_total_count']);
         $this->assertCount(2, $pagePropsQA['recentCr']);
     }
+
+    public function test_pic_can_see_and_submit_their_assessment()
+    {
+        $initiator1 = User::factory()->create(['role' => 'initiator']);
+        $initiator2 = User::factory()->create(['role' => 'initiator']);
+
+        // Create Change Request with initiator2 assigned in assessments
+        $cr = \App\Models\ChangeRequest::create([
+            'cr_number' => 'CR/2026/0001',
+            'type' => 'CRA',
+            'sifat_perubahan' => 'Formula',
+            'department' => 'Produksi',
+            'status' => 'OPEN',
+            'initiator_id' => $initiator1->id,
+            'qa_verification_data' => [
+                'qa_1' => [
+                    'submitted' => true,
+                    'assessments' => [
+                        [
+                            'user_id' => $initiator2->id,
+                            'name' => $initiator2->name,
+                            'tanggal' => null,
+                            'kajian' => '',
+                            'paraf' => false
+                        ]
+                    ]
+                ]
+            ]
+        ]);
+
+        // Initiator 2 should see it on their dashboard
+        $responseDashboard = $this->actingAs($initiator2)->get(route('dashboard'));
+        $responseDashboard->assertStatus(200);
+        $pageProps = $responseDashboard->original->getData()['page']['props'];
+        $this->assertEquals(1, $pageProps['stats']['cr_total_count']);
+        $this->assertCount(1, $pageProps['recentCr']);
+
+        // Initiator 2 should be authorized to view the show page
+        $responseShow = $this->actingAs($initiator2)->get(route('change-requests.show', $cr->id));
+        $responseShow->assertStatus(200);
+
+        // Initiator 2 submits their assessment
+        $responseSubmit = $this->actingAs($initiator2)->post(route('change-requests.submit-assessment', $cr->id), [
+            'kajian' => 'Kajian teknis oleh PIC terkait.',
+            'tanggal' => '2026-07-10',
+            'paraf' => true
+        ]);
+
+        $responseSubmit->assertRedirect();
+        
+        $cr->refresh();
+        $this->assertEquals('Kajian teknis oleh PIC terkait.', $cr->qa_verification_data['qa_1']['assessments'][0]['kajian']);
+        $this->assertEquals('2026-07-10', $cr->qa_verification_data['qa_1']['assessments'][0]['tanggal']);
+        $this->assertTrue($cr->qa_verification_data['qa_1']['assessments'][0]['paraf']);
+    }
 }

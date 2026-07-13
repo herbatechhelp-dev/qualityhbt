@@ -131,24 +131,6 @@ const submitForm = () => {
         }
     });
 };
-
-const saveAndPrint = () => {
-    form.fishbone_machine = machineLines.value.map(l => l.text).filter(t => t.trim()).join('\n');
-    form.fishbone_man = manLines.value.map(l => l.text).filter(t => t.trim()).join('\n');
-    form.fishbone_method = methodLines.value.map(l => l.text).filter(t => t.trim()).join('\n');
-    form.fishbone_milieu = milieuLines.value.map(l => l.text).filter(t => t.trim()).join('\n');
-    form.fishbone_measurement = measurementLines.value.map(l => l.text).filter(t => t.trim()).join('\n');
-    form.fishbone_materials = materialsLines.value.map(l => l.text).filter(t => t.trim()).join('\n');
-    form.root_cause = rootCauseLines.value.map(l => l.text).filter(t => t.trim()).join('\n');
-    form.risk_identification_details = riskIdLines.value.map(l => l.text).filter(t => t.trim()).join('\n');
-    form.risk_analysis_details = riskAnalysisLines.value.map(l => l.text).filter(t => t.trim()).join('\n');
-
-    form.post(route('deviations.investigations.update', props.deviation.id), {
-        onSuccess: () => {
-            openPrintPreview(route('deviations.print-investigation', props.deviation.id), 'Form Penyelidikan Ketidaksesuaian');
-        }
-    });
-};
 </script>
 
 <template>
@@ -167,7 +149,7 @@ const saveAndPrint = () => {
                     ← Kembali ke Daftar
                 </Link>
                 <div style="display: flex; gap: 10px;">
-                    <button type="button" @click="saveAndPrint" class="btn btn-secondary" style="font-size:0.85rem; display:inline-flex; align-items:center; gap:6px; background-color: #3b82f6; border-color: #3b82f6; color: white;">
+                    <button type="button" @click="openPrintPreview(route('deviations.print-investigation', deviation.id), 'Form Penyelidikan Ketidaksesuaian')" class="btn btn-secondary" style="font-size:0.85rem; display:inline-flex; align-items:center; gap:6px; background-color: #3b82f6; border-color: #3b82f6; color: white;">
                         🖨️ Cetak Form Penyelidikan
                     </button>
                     <button @click="submitForm" class="btn btn-primary" :disabled="form.processing">

@@ -1,1 +1,0 @@
-import r from"./AuthContainer-CGcYHsKE.js";import{c as t,o as e}from"./app-BDrkvY6w.js";import"./plugin-vueexport-helper-DlAUqK2U.js";import"./FeedbackOverlay-ChSk0OQ1.js";const s={__name:"Register",setup(o){return(i,a)=>(e(),t(r,{"initial-mode":"register"}))}};export{s as default};

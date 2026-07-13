@@ -20,6 +20,95 @@
         }
         return implode("<br />", $formatted);
     };
+
+    $renderBranchBoxes = function($fieldName, $value, $defaultText) {
+        $val = $value ?? '';
+        if (!$val) {
+            $points = [trim($defaultText)];
+        } else {
+            $points = array_filter(array_map('trim', explode("\n", $val)));
+        }
+        if (empty($points)) {
+            $points = [trim($defaultText)];
+        }
+
+        $config = [];
+        switch ($fieldName) {
+            case 'machine':
+                $config = [
+                    0 => ['x' => 25,  'y' => 60,  'w' => 125, 'h' => 38, 'cx' => 150, 'cy' => 79,  'rx' => 184],
+                    1 => ['x' => 70,  'y' => 105, 'w' => 120, 'h' => 38, 'cx' => 190, 'cy' => 124, 'rx' => 212],
+                    2 => ['x' => 115, 'y' => 150, 'w' => 110, 'h' => 38, 'cx' => 225, 'cy' => 169, 'rx' => 240],
+                ];
+                break;
+            case 'man':
+                $config = [
+                    0 => ['x' => 285, 'y' => 60,  'w' => 125, 'h' => 38, 'cx' => 410, 'cy' => 79,  'rx' => 444],
+                    1 => ['x' => 330, 'y' => 105, 'w' => 120, 'h' => 38, 'cx' => 450, 'cy' => 124, 'rx' => 472],
+                    2 => ['x' => 375, 'y' => 150, 'w' => 110, 'h' => 38, 'cx' => 485, 'cy' => 169, 'rx' => 500],
+                ];
+                break;
+            case 'method':
+                $config = [
+                    0 => ['x' => 545, 'y' => 60,  'w' => 125, 'h' => 38, 'cx' => 670, 'cy' => 79,  'rx' => 704],
+                    1 => ['x' => 590, 'y' => 105, 'w' => 120, 'h' => 38, 'cx' => 710, 'cy' => 124, 'rx' => 732],
+                    2 => ['x' => 635, 'y' => 150, 'w' => 110, 'h' => 38, 'cx' => 745, 'cy' => 169, 'rx' => 760],
+                ];
+                break;
+            case 'milieu':
+                $config = [
+                    0 => ['x' => 25,  'y' => 290, 'w' => 125, 'h' => 38, 'cx' => 150, 'cy' => 309, 'rx' => 185],
+                    1 => ['x' => 70,  'y' => 245, 'w' => 120, 'h' => 38, 'cx' => 190, 'cy' => 264, 'rx' => 213],
+                    2 => ['x' => 115, 'y' => 200, 'w' => 110, 'h' => 38, 'cx' => 225, 'cy' => 219, 'rx' => 241],
+                ];
+                break;
+            case 'measurement':
+                $config = [
+                    0 => ['x' => 285, 'y' => 290, 'w' => 125, 'h' => 38, 'cx' => 410, 'cy' => 309, 'rx' => 445],
+                    1 => ['x' => 330, 'y' => 245, 'w' => 120, 'h' => 38, 'cx' => 450, 'cy' => 264, 'rx' => 473],
+                    2 => ['x' => 375, 'y' => 200, 'w' => 110, 'h' => 38, 'cx' => 485, 'cy' => 219, 'rx' => 501],
+                ];
+                break;
+            case 'materials':
+                $config = [
+                    0 => ['x' => 545, 'y' => 290, 'w' => 125, 'h' => 38, 'cx' => 670, 'cy' => 309, 'rx' => 705],
+                    1 => ['x' => 590, 'y' => 245, 'w' => 120, 'h' => 38, 'cx' => 710, 'cy' => 264, 'rx' => 733],
+                    2 => ['x' => 635, 'y' => 200, 'w' => 110, 'h' => 38, 'cx' => 745, 'cy' => 219, 'rx' => 761],
+                ];
+                break;
+        }
+
+        $html = '';
+        foreach ($points as $idx => $pt) {
+            if (!isset($config[$idx])) {
+                break;
+            }
+            $cfg = $config[$idx];
+            $x = $cfg['x'];
+            $y = $cfg['y'];
+            $w = $cfg['w'];
+            $h = $cfg['h'];
+            $cx = $cfg['cx'];
+            $cy = $cfg['cy'];
+            $rx = $cfg['rx'];
+
+            $trimmed = trim($pt);
+            if ($trimmed === '') continue;
+            if (!preg_match('/^[\-\*\•\d+\.\)]/', $trimmed)) {
+                $trimmed = '- ' . $trimmed;
+            }
+
+            $html .= '<foreignObject x="' . $x . '" y="' . $y . '" width="' . $w . '" height="' . $h . '">';
+            $html .= '<div xmlns="http://www.w3.org/1999/xhtml" style="font-family: Arial, sans-serif; font-size: 7.2px; border: 1px solid #cbd5e1; background-color: #fafafa; padding: 4px 6px; border-radius: 4px; line-height: 1.2; box-sizing: border-box; height: 100%; overflow: hidden; text-align: left; white-space: pre-wrap; display: flex; align-items: center; justify-content: start; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">';
+            $html .= e($trimmed);
+            $html .= '</div>';
+            $html .= '</foreignObject>';
+
+            $html .= '<line x1="' . $cx . '" y1="' . $cy . '" x2="' . $rx . '" y2="' . $cy . '" stroke="#000" stroke-width="1" stroke-dasharray="2,2" />';
+        }
+
+        return $html;
+    };
 @endphp
 <html lang="id">
 <head>
@@ -402,13 +491,7 @@
                             Machine
                         </div>
                     </foreignObject>
-                    <foreignObject x="25" y="65" width="130" height="55">
-                        <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: Arial, sans-serif; font-size: 7.5px; border: 1px solid #cbd5e1; background-color: #fafafa; padding: 5px; border-radius: 4px; line-height: 1.25; box-sizing: border-box; height: 100%; overflow: hidden; text-align: left; white-space: pre-wrap;">
-                            {!! $formatFishbone($deviation->fishbone_machine, 'Pengecekan mesin & alat penunjang operasional produksi.') !!}
-                        </div>
-                    </foreignObject>
-                    <!-- Connector horizontal box to rib -->
-                    <line x1="155" y1="92" x2="192" y2="92" stroke="#000" stroke-width="1" stroke-dasharray="2,2" />
+                    {!! $renderBranchBoxes('machine', $deviation->fishbone_machine, 'Pengecekan mesin & alat penunjang operasional produksi.') !!}
 
                     <!-- Man Rib -->
                     <line x1="420" y1="40" x2="520" y2="200" stroke="#000" stroke-width="2" />
@@ -417,12 +500,7 @@
                             Man
                         </div>
                     </foreignObject>
-                    <foreignObject x="285" y="65" width="130" height="55">
-                        <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: Arial, sans-serif; font-size: 7.5px; border: 1px solid #cbd5e1; background-color: #fafafa; padding: 5px; border-radius: 4px; line-height: 1.25; box-sizing: border-box; height: 100%; overflow: hidden; text-align: left; white-space: pre-wrap;">
-                            {!! $formatFishbone($deviation->fishbone_man, 'Pemeriksaan kepatuhan personalia & pelatihan higienitas.') !!}
-                        </div>
-                    </foreignObject>
-                    <line x1="415" y1="92" x2="452" y2="92" stroke="#000" stroke-width="1" stroke-dasharray="2,2" />
+                    {!! $renderBranchBoxes('man', $deviation->fishbone_man, 'Pemeriksaan kepatuhan personalia & pelatihan higienitas.') !!}
 
                     <!-- Method/Process Rib -->
                     <line x1="680" y1="40" x2="780" y2="200" stroke="#000" stroke-width="2" />
@@ -431,12 +509,7 @@
                             Method/Process
                         </div>
                     </foreignObject>
-                    <foreignObject x="545" y="65" width="130" height="55">
-                        <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: Arial, sans-serif; font-size: 7.5px; border: 1px solid #cbd5e1; background-color: #fafafa; padding: 5px; border-radius: 4px; line-height: 1.25; box-sizing: border-box; height: 100%; overflow: hidden; text-align: left; white-space: pre-wrap;">
-                            {!! $formatFishbone($deviation->fishbone_method, 'Evaluasi prosedur kerja standard (SOP) saat kejadian.') !!}
-                        </div>
-                    </foreignObject>
-                    <line x1="675" y1="92" x2="712" y2="92" stroke="#000" stroke-width="1" stroke-dasharray="2,2" />
+                    {!! $renderBranchBoxes('method', $deviation->fishbone_method, 'Evaluasi prosedur kerja standard (SOP) saat kejadian.') !!}
 
                     <!-- --- BOTTOM BRANCHES --- -->
                     <!-- Milieu Rib -->
@@ -446,12 +519,7 @@
                             Milieu
                         </div>
                     </foreignObject>
-                    <foreignObject x="25" y="280" width="130" height="55">
-                        <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: Arial, sans-serif; font-size: 7.5px; border: 1px solid #cbd5e1; background-color: #fafafa; padding: 5px; border-radius: 4px; line-height: 1.25; box-sizing: border-box; height: 100%; overflow: hidden; text-align: left; white-space: pre-wrap;">
-                            {!! $formatFishbone($deviation->fishbone_milieu, 'Pemantauan kondisi lingkungan ruang pengolahan/kelas.') !!}
-                        </div>
-                    </foreignObject>
-                    <line x1="155" y1="308" x2="192" y2="308" stroke="#000" stroke-width="1" stroke-dasharray="2,2" />
+                    {!! $renderBranchBoxes('milieu', $deviation->fishbone_milieu, 'Pemantauan kondisi lingkungan ruang pengolahan/kelas.') !!}
 
                     <!-- Measurement Rib -->
                     <line x1="420" y1="360" x2="520" y2="200" stroke="#000" stroke-width="2" />
@@ -460,12 +528,7 @@
                             Measurement
                         </div>
                     </foreignObject>
-                    <foreignObject x="285" y="280" width="130" height="55">
-                        <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: Arial, sans-serif; font-size: 7.5px; border: 1px solid #cbd5e1; background-color: #fafafa; padding: 5px; border-radius: 4px; line-height: 1.25; box-sizing: border-box; height: 100%; overflow: hidden; text-align: left; white-space: pre-wrap;">
-                            {!! $formatFishbone($deviation->fishbone_measurement, 'Verifikasi alat ukur, kalibrasi instrumen, dan IPC.') !!}
-                        </div>
-                    </foreignObject>
-                    <line x1="415" y1="308" x2="452" y2="308" stroke="#000" stroke-width="1" stroke-dasharray="2,2" />
+                    {!! $renderBranchBoxes('measurement', $deviation->fishbone_measurement, 'Verifikasi alat ukur, kalibrasi instrumen, dan IPC.') !!}
 
                     <!-- Materials Rib -->
                     <line x1="680" y1="360" x2="780" y2="200" stroke="#000" stroke-width="2" />
@@ -474,12 +537,7 @@
                             Materials
                         </div>
                     </foreignObject>
-                    <foreignObject x="545" y="280" width="130" height="55">
-                        <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: Arial, sans-serif; font-size: 7.5px; border: 1px solid #cbd5e1; background-color: #fafafa; padding: 5px; border-radius: 4px; line-height: 1.25; box-sizing: border-box; height: 100%; overflow: hidden; text-align: left; white-space: pre-wrap;">
-                            {!! $formatFishbone($deviation->fishbone_materials, 'Analisis bahan awal, kemasan primer, & identitas bets.') !!}
-                        </div>
-                    </foreignObject>
-                    <line x1="675" y1="308" x2="712" y2="308" stroke="#000" stroke-width="1" stroke-dasharray="2,2" />
+                    {!! $renderBranchBoxes('materials', $deviation->fishbone_materials, 'Analisis bahan awal, kemasan primer, & identitas bets.') !!}
                 </svg>
             </div>
 

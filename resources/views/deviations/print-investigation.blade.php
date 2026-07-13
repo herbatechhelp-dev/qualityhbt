@@ -116,14 +116,17 @@
     <title>Form Penyelidikan Ketidaksesuaian - {{ $deviation->deviation_number }}</title>
     <style>
         /* CSS reset & variables */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
         body {
             font-family: Arial, sans-serif;
             font-size: 10px;
             line-height: 1.3;
             color: #000;
             background-color: #fff;
-            margin: 0;
-            padding: 0;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
         }
@@ -155,21 +158,23 @@
                 margin: 0;
             }
             .page-landscape {
-                width: 100%;
-                height: 100%;
+                width: 297mm;
+                height: 210mm;
                 page-break-after: always;
                 page-break-inside: avoid;
                 margin: 0;
-                padding: 10mm;
+                padding: 6mm 10mm;
+                box-sizing: border-box;
             }
             .page-portrait {
-                width: 100%;
-                height: 100%;
+                width: 210mm;
+                height: 297mm;
                 page-break-before: always;
                 page-break-after: avoid;
                 page-break-inside: avoid;
                 margin: 0;
-                padding: 10mm;
+                padding: 6mm 10mm;
+                box-sizing: border-box;
             }
             /* Change page size dynamically for portrait page */
             .page-portrait-parent {

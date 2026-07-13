@@ -88,15 +88,22 @@ class DeviationController extends Controller
         $deviationNumber = null;
 
         if ($status === 'OPEN') {
-            $year     = now()->year;
-            $count    = Deviation::whereYear('created_at', $year)->where('status', '!=', 'DRAFT')->count();
-            $sequence = str_pad($count + 1, 4, '0', STR_PAD_LEFT);
-            $deviationNumber = "DEV/{$year}/{$sequence}";
+            $year  = now()->year;
+            $month = now()->month;
+            $count = Deviation::whereYear('created_at', $year)
+                              ->whereMonth('created_at', $month)
+                              ->where('status', '!=', 'DRAFT')
+                              ->count();
+            $sequence = str_pad($count + 1, 2, '0', STR_PAD_LEFT);
+            $deviationNumber = "DR/{$sequence}/{$year}";
         } else {
             // Draft: generate a temp number (will be replaced on submit)
-            $year     = now()->year;
-            $count    = Deviation::whereYear('created_at', $year)->count();
-            $deviationNumber = "DRAFT/{$year}/" . str_pad($count + 1, 4, '0', STR_PAD_LEFT);
+            $year  = now()->year;
+            $month = now()->month;
+            $count = Deviation::whereYear('created_at', $year)
+                              ->whereMonth('created_at', $month)
+                              ->count();
+            $deviationNumber = "DRAFT/" . str_pad($count + 1, 2, '0', STR_PAD_LEFT) . "/{$year}";
         }
 
         // Handle multiple attachments
@@ -213,10 +220,14 @@ class DeviationController extends Controller
         // Regenerate deviation number if submitting from DRAFT
         $deviationNumber = $deviation->deviation_number;
         if ($status === 'OPEN' && str_starts_with($deviationNumber, 'DRAFT/')) {
-            $year     = now()->year;
-            $count    = Deviation::whereYear('created_at', $year)->where('status', '!=', 'DRAFT')->count();
-            $sequence = str_pad($count + 1, 4, '0', STR_PAD_LEFT);
-            $deviationNumber = "DEV/{$year}/{$sequence}";
+            $year  = now()->year;
+            $month = now()->month;
+            $count = Deviation::whereYear('created_at', $year)
+                              ->whereMonth('created_at', $month)
+                              ->where('status', '!=', 'DRAFT')
+                              ->count();
+            $sequence = str_pad($count + 1, 2, '0', STR_PAD_LEFT);
+            $deviationNumber = "DR/{$sequence}/{$year}";
         }
 
         // Handle new attachments (merge with existing)
@@ -385,5 +396,91 @@ class DeviationController extends Controller
             'omUser' => $om,
             'gmUser' => $gm
         ]);
+    }
+
+    public function investigationsIndex(Request $request)
+    {
+        $user = $request->user();
+        $query = Deviation::with(['initiator'])->where('status', '!=', 'DRAFT');
+
+        if ($user->role === 'initiator') {
+            $query->where('initiator_id', $user->id);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('deviation_number', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhereHas('initiator', function($sq) use ($search) {
+                      $sq->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        if ($request->filled('department')) {
+            $query->where('department', 'like', "%{$request->department}%");
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $deviations = $query->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
+
+        return Inertia::render('Deviations/Investigations/Index', [
+            'deviations' => $deviations,
+            'filters' => $request->only(['search', 'department', 'status']),
+        ]);
+    }
+
+    public function editInvestigation(Request $request, Deviation $deviation)
+    {
+        $user = $request->user();
+        if ($user->role === 'initiator' && $deviation->initiator_id !== $user->id) {
+            abort(403, 'Unauthorized.');
+        }
+
+        $deviation->load(['initiator', 'capa']);
+
+        return Inertia::render('Deviations/Investigations/Edit', [
+            'deviation' => $deviation,
+        ]);
+    }
+
+    public function updateInvestigation(Request $request, Deviation $deviation)
+    {
+        $user = $request->user();
+        if ($user->role === 'initiator' && $deviation->initiator_id !== $user->id) {
+            abort(403, 'Unauthorized.');
+        }
+
+        $request->validate([
+            'fishbone_machine'             => 'nullable|string',
+            'fishbone_man'                 => 'nullable|string',
+            'fishbone_method'              => 'nullable|string',
+            'fishbone_milieu'              => 'nullable|string',
+            'fishbone_measurement'         => 'nullable|string',
+            'fishbone_materials'           => 'nullable|string',
+            'root_cause'                   => 'nullable|string',
+            'risk_identification_details'  => 'nullable|string',
+            'risk_analysis_details'        => 'nullable|string',
+            'risk_analysis'                => 'nullable|array',
+        ]);
+
+        $deviation->update([
+            'fishbone_machine'             => $request->fishbone_machine,
+            'fishbone_man'                 => $request->fishbone_man,
+            'fishbone_method'              => $request->fishbone_method,
+            'fishbone_milieu'              => $request->fishbone_milieu,
+            'fishbone_measurement'         => $request->fishbone_measurement,
+            'fishbone_materials'           => $request->fishbone_materials,
+            'root_cause'                   => $request->root_cause,
+            'risk_identification_details'  => $request->risk_identification_details,
+            'risk_analysis_details'        => $request->risk_analysis_details,
+            'risk_analysis'                => $request->risk_analysis ?? $deviation->risk_analysis,
+        ]);
+
+        return redirect()->route('deviations.investigations.index')->with('success', 'Form Penyelidikan Ketidaksesuaian berhasil diperbarui.');
     }
 }

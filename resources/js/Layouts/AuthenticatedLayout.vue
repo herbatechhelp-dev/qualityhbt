@@ -73,9 +73,19 @@ const user = page.props.auth.user;
                 <Link :href="route('change-requests.index')" class="qms-sidebar-item" :class="{ active: route().current('change-requests.*') }">
                     🔄 Change Request (CR)
                 </Link>
-                <Link :href="route('deviations.index')" class="qms-sidebar-item" :class="{ active: route().current('deviations.*') }">
-                    ⚠️ Deviation Report
-                </Link>
+                <div>
+                    <div class="qms-sidebar-item" :class="{ active: route().current('deviations.*') || route().current('deviations.investigations.*') }" style="font-weight: 600; cursor: default;">
+                        ⚠️ Deviation Report
+                    </div>
+                    <div style="padding-left: 12px; display: flex; flex-direction: column; gap: 4px; margin-top: 4px; border-left: 2px solid var(--border-color); margin-left: 12px;">
+                        <Link :href="route('deviations.index')" class="qms-sidebar-item" style="padding: 8px 12px; font-size: 0.85rem;" :class="{ active: route().current('deviations.*') && !route().current('deviations.investigations.*') }">
+                            📋 Logbook Deviasi
+                        </Link>
+                        <Link :href="route('deviations.investigations.index')" class="qms-sidebar-item" style="padding: 8px 12px; font-size: 0.85rem;" :class="{ active: route().current('deviations.investigations.*') }">
+                            🔍 Penyelidikan
+                        </Link>
+                    </div>
+                </div>
                 <Link :href="route('capas.index')" class="qms-sidebar-item" :class="{ active: route().current('capas.*') }">
                     ✅ CAPA Management
                 </Link>

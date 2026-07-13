@@ -30,6 +30,15 @@ class Deviation extends Model
         'status',
         'initiator_id',
         'reject_reason',
+        'fishbone_machine',
+        'fishbone_man',
+        'fishbone_method',
+        'fishbone_milieu',
+        'fishbone_measurement',
+        'fishbone_materials',
+        'root_cause',
+        'risk_identification_details',
+        'risk_analysis_details',
     ];
 
     protected $casts = [

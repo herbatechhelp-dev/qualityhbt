@@ -231,6 +231,45 @@ watch(
     { deep: true }
 );
 
+watch(
+    () => props.changeRequest,
+    (newVal) => {
+        if (newVal) {
+            qaForm.rencana_tindakan = newVal.rencana_tindakan || '';
+            qaForm.pic_id = newVal.pic_id || '';
+            qaForm.timeline = newVal.timeline || '';
+            qaForm.hasil_verifikasi = newVal.hasil_verifikasi || '';
+            qaForm.status = newVal.status === 'DRAFT' || newVal.status === 'OPEN' ? 'IN REVIEW' : newVal.status;
+
+            if (newVal.qa_verification_data) {
+                const mappedQa1 = {
+                    ...defaultVerificationData.qa_1,
+                    ...(newVal.qa_verification_data.qa_1 || {}),
+                    assessments: newVal.qa_verification_data.qa_1?.assessments || [],
+                    submitted: !!newVal.qa_verification_data.qa_1?.submitted,
+                    hu_approved: mapApprovals(newVal.qa_verification_data.qa_1?.hu_approved),
+                    om_approved: mapApprovals(newVal.qa_verification_data.qa_1?.om_approved),
+                    gm_approved: mapApprovals(newVal.qa_verification_data.qa_1?.gm_approved),
+                };
+                const mappedQa2 = {
+                    ...defaultVerificationData.qa_2,
+                    ...(newVal.qa_verification_data.qa_2 || {})
+                };
+                const mappedQa3 = {
+                    ...defaultVerificationData.qa_3,
+                    ...(newVal.qa_verification_data.qa_3 || {})
+                };
+                qaForm.qa_verification_data = {
+                    qa_1: mappedQa1,
+                    qa_2: mappedQa2,
+                    qa_3: mappedQa3
+                };
+            }
+        }
+    },
+    { deep: true }
+);
+
 const submitMyAssessment = () => {
     myAssessmentForm.post(route('change-requests.submit-assessment', props.changeRequest.id));
 };
@@ -450,24 +489,24 @@ const getStatusClass = (status) => {
 
                     <!-- FMEA parameters (CRA Only) -->
                     <div v-if="editForm.type === 'CRA'" style="border-top: 1px solid var(--border-color); padding-top: 12px;">
-                        <label class="form-label" style="font-weight: 600;">Penilaian Parameter Risiko FMEA (Skala 1 - 10)</label>
+                        <label class="form-label" style="font-weight: 600;">Penilaian Parameter Risiko FMEA (Skala 1, 3, 9)</label>
                         <div class="grid-3" style="margin-bottom: 16px;">
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label class="form-label">Severity (Keparahan)</label>
                                 <select v-model.number="editForm.severity" class="form-select">
-                                    <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
+                                    <option v-for="n in [1, 3, 9]" :key="n" :value="n">{{ n }}</option>
                                 </select>
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label class="form-label">Occurrence (Keterjadian)</label>
                                 <select v-model.number="editForm.occurrence" class="form-select">
-                                    <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
+                                    <option v-for="n in [1, 3, 9]" :key="n" :value="n">{{ n }}</option>
                                 </select>
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label class="form-label">Detection (Deteksi)</label>
                                 <select v-model.number="editForm.detection" class="form-select">
-                                    <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
+                                    <option v-for="n in [1, 3, 9]" :key="n" :value="n">{{ n }}</option>
                                 </select>
                             </div>
                         </div>
@@ -511,7 +550,7 @@ const getStatusClass = (status) => {
                         </div>
                     </div>
                 </div>
-                <form @submit.prevent="submitQaEvaluation" style="display: contents;">
+                <div style="display: contents;">
                 <div class="qms-show-grid">
                     <div style="display: flex; flex-direction: column; gap: 24px;">
                         <!-- Detail Card -->
@@ -1281,7 +1320,7 @@ const getStatusClass = (status) => {
                 <!-- QA ACTIONS PANEL (Right Column) -->
                 <div>
                     <!-- Editable form: QA & superadmin only -->
-                    <div v-if="isQa || isSuperAdmin" class="qms-card" style="border-top: 4px solid var(--accent-color); position: sticky; top: 20px;">
+                    <form v-if="isQa || isSuperAdmin" @submit.prevent="submitQaEvaluation" class="qms-card" style="border-top: 4px solid var(--accent-color); position: sticky; top: 20px; display: block;">
                         <h3 style="font-size: 1.15rem; margin-bottom: 16px; color: var(--text-primary);">🛠️ Evaluasi QA</h3>
                         
                         <div style="display: flex; flex-direction: column; gap: 16px;">
@@ -1325,7 +1364,7 @@ const getStatusClass = (status) => {
                                 {{ qaForm.processing ? 'Menyimpan...' : '💾 Simpan Evaluasi' }}
                             </button>
                         </div>
-                    </div>
+                    </form>
 
                     <!-- Read-only info panel: HO, OM, GM -->
                     <div v-else-if="isHu || isOm || isGm" class="qms-card" style="border-top: 4px solid var(--border-color); position: sticky; top: 20px;">
@@ -1405,7 +1444,7 @@ const getStatusClass = (status) => {
                     </div>
                 </div>
                 </div>
-            </form>
+            </div>
             </div>
         </div>
 

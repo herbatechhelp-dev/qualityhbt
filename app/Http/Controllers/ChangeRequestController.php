@@ -112,9 +112,9 @@ class ChangeRequestController extends Controller
             $rules = array_merge($rules, [
                 'sifat_perubahan' => 'required|string|max:255',
                 'sifat_perubahan_custom' => 'required_if:sifat_perubahan,Lain - lain|nullable|string|max:255',
-                'severity' => 'required|integer|min:1|max:10',
-                'occurrence' => 'required|integer|min:1|max:10',
-                'detection' => 'required|integer|min:1|max:10',
+                'severity' => 'required|integer|in:1,3,9',
+                'occurrence' => 'required|integer|in:1,3,9',
+                'detection' => 'required|integer|in:1,3,9',
             ]);
         } else {
             $rules = array_merge($rules, [
@@ -226,9 +226,9 @@ class ChangeRequestController extends Controller
                 $rules = array_merge($rules, [
                     'sifat_perubahan' => 'required|string|max:255',
                     'sifat_perubahan_custom' => 'required_if:sifat_perubahan,Lain - lain|nullable|string|max:255',
-                    'severity' => 'required|integer|min:1|max:10',
-                    'occurrence' => 'required|integer|min:1|max:10',
-                    'detection' => 'required|integer|min:1|max:10',
+                    'severity' => 'required|integer|in:1,3,9',
+                    'occurrence' => 'required|integer|in:1,3,9',
+                    'detection' => 'required|integer|in:1,3,9',
                 ]);
             } else {
                 $rules = array_merge($rules, [

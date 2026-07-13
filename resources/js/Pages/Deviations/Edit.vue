@@ -43,19 +43,19 @@ const showSodGuide = ref(false);
 
 const sodGuide = {
     severity: [
-        { level: 'Rendah', nilai: '1–3', kondisi: 'Tidak ada dampak pada produk/proses. Temuan minor.' },
-        { level: 'Sedang', nilai: '4–6', kondisi: 'Dampak terbatas, dapat dimitigasi tanpa mempengaruhi kualitas produk.' },
-        { level: 'Tinggi', nilai: '7–10', kondisi: 'Dampak serius terhadap keamanan, kualitas, atau kepatuhan regulasi.' },
+        { level: 'Rendah', nilai: '1', kondisi: 'Tidak ada dampak pada produk/proses. Temuan minor.' },
+        { level: 'Sedang', nilai: '3', kondisi: 'Dampak terbatas, dapat dimitigasi tanpa mempengaruhi kualitas produk.' },
+        { level: 'Tinggi', nilai: '9', kondisi: 'Dampak serius terhadap keamanan, kualitas, atau kepatuhan regulasi.' },
     ],
     occurrence: [
-        { level: 'Rendah', nilai: '1–3', kondisi: 'Kurang dari 1% produk dapat mengalami ketidaksesuaian. Jarang terjadi.' },
-        { level: 'Sedang', nilai: '4–6', kondisi: '1%–5% produk; 2–5 kali dalam 1 tahun periode kejadian.' },
-        { level: 'Tinggi', nilai: '7–10', kondisi: 'Lebih dari 5% kejadian; berulang lebih dari 10 kali. Hampir pasti terjadi.' },
+        { level: 'Rendah', nilai: '1', kondisi: 'Kurang dari 1% produk dapat mengalami ketidaksesuaian. Jarang terjadi.' },
+        { level: 'Sedang', nilai: '3', kondisi: '1%–5% produk; 2–5 kali dalam 1 tahun periode kejadian.' },
+        { level: 'Tinggi', nilai: '9', kondisi: 'Lebih dari 5% kejadian; berulang lebih dari 10 kali. Hampir pasti terjadi.' },
     ],
     detection: [
-        { level: 'Rendah', nilai: '1–3', kondisi: 'Potensi risiko tidak dapat dideteksi.' },
-        { level: 'Sedang', nilai: '4–6', kondisi: 'Potensi risiko dapat dideteksi namun tidak selalu oleh prosedur yang ada.' },
-        { level: 'Tinggi', nilai: '7–10', kondisi: 'Potensi dapat berpotensi dideteksi sebelum produk dikirim.' },
+        { level: 'Rendah', nilai: '1', kondisi: 'Potensi risiko tidak dapat dideteksi.' },
+        { level: 'Sedang', nilai: '3', kondisi: 'Potensi risiko dapat dideteksi namun tidak selalu oleh prosedur yang ada.' },
+        { level: 'Tinggi', nilai: '9', kondisi: 'Potensi dapat berpotensi dideteksi sebelum produk dikirim.' },
     ],
 };
 
@@ -434,19 +434,19 @@ const submitForm = (submitType) => {
                             <div class="form-group" style="margin-bottom:0;min-width:90px;flex:1;">
                                 <label class="form-label">Severity (S)</label>
                                 <select v-model.number="row.s" class="form-select" @change="updateRpn(row)">
-                                    <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
+                                    <option v-for="n in [1, 3, 9]" :key="n" :value="n">{{ n }}</option>
                                 </select>
                             </div>
                             <div class="form-group" style="margin-bottom:0;min-width:90px;flex:1;">
                                 <label class="form-label">Occurrence (O)</label>
                                 <select v-model.number="row.o" class="form-select" @change="updateRpn(row)">
-                                    <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
+                                    <option v-for="n in [1, 3, 9]" :key="n" :value="n">{{ n }}</option>
                                 </select>
                             </div>
                             <div class="form-group" style="margin-bottom:0;min-width:90px;flex:1;">
                                 <label class="form-label">Detection (D)</label>
                                 <select v-model.number="row.d" class="form-select" @change="updateRpn(row)">
-                                    <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
+                                    <option v-for="n in [1, 3, 9]" :key="n" :value="n">{{ n }}</option>
                                 </select>
                             </div>
                             <div style="min-width:100px;flex:1;text-align:center;padding-bottom:2px;">
@@ -482,19 +482,19 @@ const submitForm = (submitType) => {
                                 <div class="form-group" style="margin-bottom:0;min-width:90px;flex:1;">
                                     <label class="form-label">Expected Severity (S)</label>
                                     <select v-model.number="row.s_after" class="form-select" @change="updateRpn(row)">
-                                        <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
+                                        <option v-for="n in [1, 3, 9]" :key="n" :value="n">{{ n }}</option>
                                     </select>
                                 </div>
                                 <div class="form-group" style="margin-bottom:0;min-width:90px;flex:1;">
                                     <label class="form-label">Expected Occurrence (O)</label>
                                     <select v-model.number="row.o_after" class="form-select" @change="updateRpn(row)">
-                                        <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
+                                        <option v-for="n in [1, 3, 9]" :key="n" :value="n">{{ n }}</option>
                                     </select>
                                 </div>
                                 <div class="form-group" style="margin-bottom:0;min-width:90px;flex:1;">
                                     <label class="form-label">Expected Detection (D)</label>
                                     <select v-model.number="row.d_after" class="form-select" @change="updateRpn(row)">
-                                        <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
+                                        <option v-for="n in [1, 3, 9]" :key="n" :value="n">{{ n }}</option>
                                     </select>
                                 </div>
                                 <div style="min-width:100px;flex:1;text-align:center;padding-bottom:2px;">

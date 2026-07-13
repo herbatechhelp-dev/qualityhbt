@@ -387,7 +387,7 @@
                     </foreignObject>
                     <foreignObject x="25" y="65" width="130" height="55">
                         <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: Arial, sans-serif; font-size: 7.5px; border: 1px solid #cbd5e1; background-color: #fafafa; padding: 5px; border-radius: 4px; line-height: 1.25; box-sizing: border-box; height: 100%; overflow: hidden; text-align: left;">
-                            Pengecekan mesin &amp; alat penunjang operasional produksi.
+                            {{ $deviation->fishbone_machine ?? 'Pengecekan mesin & alat penunjang operasional produksi.' }}
                         </div>
                     </foreignObject>
                     <!-- Connector horizontal box to rib -->
@@ -402,7 +402,7 @@
                     </foreignObject>
                     <foreignObject x="285" y="65" width="130" height="55">
                         <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: Arial, sans-serif; font-size: 7.5px; border: 1px solid #cbd5e1; background-color: #fafafa; padding: 5px; border-radius: 4px; line-height: 1.25; box-sizing: border-box; height: 100%; overflow: hidden; text-align: left;">
-                            Pemeriksaan kepatuhan personalia &amp; pelatihan higienitas.
+                            {{ $deviation->fishbone_man ?? 'Pemeriksaan kepatuhan personalia & pelatihan higienitas.' }}
                         </div>
                     </foreignObject>
                     <line x1="415" y1="92" x2="452" y2="92" stroke="#000" stroke-width="1" stroke-dasharray="2,2" />
@@ -416,7 +416,7 @@
                     </foreignObject>
                     <foreignObject x="545" y="65" width="130" height="55">
                         <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: Arial, sans-serif; font-size: 7.5px; border: 1px solid #cbd5e1; background-color: #fafafa; padding: 5px; border-radius: 4px; line-height: 1.25; box-sizing: border-box; height: 100%; overflow: hidden; text-align: left;">
-                            Evaluasi prosedur kerja standard (SOP) saat kejadian.
+                            {{ $deviation->fishbone_method ?? 'Evaluasi prosedur kerja standard (SOP) saat kejadian.' }}
                         </div>
                     </foreignObject>
                     <line x1="675" y1="92" x2="712" y2="92" stroke="#000" stroke-width="1" stroke-dasharray="2,2" />
@@ -431,7 +431,7 @@
                     </foreignObject>
                     <foreignObject x="25" y="280" width="130" height="55">
                         <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: Arial, sans-serif; font-size: 7.5px; border: 1px solid #cbd5e1; background-color: #fafafa; padding: 5px; border-radius: 4px; line-height: 1.25; box-sizing: border-box; height: 100%; overflow: hidden; text-align: left;">
-                            Pemantauan kondisi lingkungan ruang pengolahan/kelas.
+                            {{ $deviation->fishbone_milieu ?? 'Pemantauan kondisi lingkungan ruang pengolahan/kelas.' }}
                         </div>
                     </foreignObject>
                     <line x1="155" y1="308" x2="192" y2="308" stroke="#000" stroke-width="1" stroke-dasharray="2,2" />
@@ -445,7 +445,7 @@
                     </foreignObject>
                     <foreignObject x="285" y="280" width="130" height="55">
                         <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: Arial, sans-serif; font-size: 7.5px; border: 1px solid #cbd5e1; background-color: #fafafa; padding: 5px; border-radius: 4px; line-height: 1.25; box-sizing: border-box; height: 100%; overflow: hidden; text-align: left;">
-                            Verifikasi alat ukur, kalibrasi instrumen, dan IPC.
+                            {{ $deviation->fishbone_measurement ?? 'Verifikasi alat ukur, kalibrasi instrumen, dan IPC.' }}
                         </div>
                     </foreignObject>
                     <line x1="415" y1="308" x2="452" y2="308" stroke="#000" stroke-width="1" stroke-dasharray="2,2" />
@@ -459,7 +459,7 @@
                     </foreignObject>
                     <foreignObject x="545" y="280" width="130" height="55">
                         <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: Arial, sans-serif; font-size: 7.5px; border: 1px solid #cbd5e1; background-color: #fafafa; padding: 5px; border-radius: 4px; line-height: 1.25; box-sizing: border-box; height: 100%; overflow: hidden; text-align: left;">
-                            Analisis bahan awal, kemasan primer, &amp; identitas bets.
+                            {{ $deviation->fishbone_materials ?? 'Analisis bahan awal, kemasan primer, & identitas bets.' }}
                         </div>
                     </foreignObject>
                     <line x1="675" y1="308" x2="712" y2="308" stroke="#000" stroke-width="1" stroke-dasharray="2,2" />
@@ -503,24 +503,21 @@
                 <div style="margin-bottom: 10px;">
                     <div class="label-bold" style="margin-bottom: 4px;">A. Akar Masalah/ Root Cause :</div>
                     <div style="min-height: 40px; border: 1px solid #000; padding: 6px; font-family: monospace; font-size: 9px; line-height: 1.4; background-color: #fafafa; border-radius: 4px;">
-                        Berdasarkan investigasi fishbone, akar masalah disebabkan oleh:
-                        - Kriteria kesesuaian operasional alat/mesin yang belum terkalibrasi berkala.
-                        - Diperlukan peningkatan pengawasan In Process Control (IPC).
+                        {!! nl2br(e($deviation->root_cause ?? "Berdasarkan investigasi fishbone, akar masalah disebabkan oleh:\n- Kriteria kesesuaian operasional alat/mesin yang belum terkalibrasi berkala.\n- Diperlukan peningkatan pengawasan In Process Control (IPC).")) !!}
                     </div>
                 </div>
 
                 <div style="margin-bottom: 10px;">
                     <div class="label-bold" style="margin-bottom: 4px;">B. Identifikasi Risiko :</div>
                     <div style="min-height: 35px; border: 1px solid #000; padding: 6px; font-family: monospace; font-size: 9px; line-height: 1.4; background-color: #fafafa; border-radius: 4px;">
-                        1. Potensi imbas pada bets produk terkait yang diproses pada hari yang sama.
-                        2. Risiko penurunan spesifikasi mutu atau stabilitas produk akhir.
+                        {!! nl2br(e($deviation->risk_identification_details ?? "1. Potensi imbas pada bets produk terkait yang diproses pada hari yang sama.\n2. Risiko penurunan spesifikasi mutu atau stabilitas produk akhir.")) !!}
                     </div>
                 </div>
 
                 <div style="margin-bottom: 10px;">
                     <div class="label-bold" style="margin-bottom: 4px;">C. Analisa Risiko :</div>
                     <div style="min-height: 35px; border: 1px solid #000; padding: 6px; font-family: monospace; font-size: 9px; line-height: 1.4; background-color: #fafafa; border-radius: 4px;">
-                        Kajian risiko dilakukan menggunakan Failure Mode and Effects Analysis (FMEA) untuk menghitung tingkat keparahan (S), frekuensi (O), dan kemampuan deteksi (D).
+                        {!! nl2br(e($deviation->risk_analysis_details ?? "Kajian risiko dilakukan menggunakan Failure Mode and Effects Analysis (FMEA) untuk menghitung tingkat keparahan (S), frekuensi (O), dan kemampuan deteksi (D).")) !!}
                     </div>
                 </div>
 

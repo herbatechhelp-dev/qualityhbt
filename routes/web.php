@@ -146,6 +146,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/change-requests/{changeRequest}/attachment', [ChangeRequestController::class, 'destroyAttachment'])->name('change-requests.destroy-attachment');
 
     // Deviation routes
+    Route::get('/deviations-investigations', [DeviationController::class, 'investigationsIndex'])->name('deviations.investigations.index');
+    Route::get('/deviations/{deviation}/investigation', [DeviationController::class, 'editInvestigation'])->name('deviations.investigations.edit');
+    Route::post('/deviations/{deviation}/investigation', [DeviationController::class, 'updateInvestigation'])->name('deviations.investigations.update');
+
     Route::get('/deviations', [DeviationController::class, 'index'])->name('deviations.index');
     Route::get('/deviations/create', [DeviationController::class, 'create'])->name('deviations.create');
     Route::post('/deviations', [DeviationController::class, 'store'])->name('deviations.store');

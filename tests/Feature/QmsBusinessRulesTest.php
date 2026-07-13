@@ -24,9 +24,9 @@ class QmsBusinessRulesTest extends TestCase
             'usulan_perubahan' => 'Rencana usulan perubahan baru',
             'alasan_perubahan' => 'Alasan dilakukannya perubahan',
             'analisis_dampak' => 'Analisis dampak risiko kualitas',
-            'severity' => 6,
-            'occurrence' => 4,
-            'detection' => 3,
+            'severity' => 9,
+            'occurrence' => 3,
+            'detection' => 1,
             'submit_type' => 'submit',
         ]);
 
@@ -38,10 +38,10 @@ class QmsBusinessRulesTest extends TestCase
             'usulan_perubahan' => 'Rencana usulan perubahan baru',
             'alasan_perubahan' => 'Alasan dilakukannya perubahan',
             'analisis_dampak' => 'Analisis dampak risiko kualitas',
-            'severity' => 6,
-            'occurrence' => 4,
-            'detection' => 3,
-            'rpn' => 72, // 6 * 4 * 3
+            'severity' => 9,
+            'occurrence' => 3,
+            'detection' => 1,
+            'rpn' => 27, // 9 * 3 * 1
             'status' => 'OPEN',
         ]);
     }
@@ -674,12 +674,16 @@ class QmsBusinessRulesTest extends TestCase
             'status' => 'REJECTED',
             'reject_reason' => 'Need detail',
             'initiator_id' => $initiator->id,
+            'is_other_batch_affected' => false,
+            'is_production_stopped' => false,
         ]);
 
         // Resubmit the rejected deviation
         $response = $this->actingAs($initiator)->post(route('deviations.update', $deviation->id), [
             'department' => 'QA',
             'description' => 'Revised description with detail',
+            'is_other_batch_affected' => false,
+            'is_production_stopped' => false,
             'submit_type' => 'submit',
         ]);
 

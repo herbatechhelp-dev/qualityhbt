@@ -386,8 +386,8 @@
                         </div>
                     </foreignObject>
                     <foreignObject x="25" y="65" width="130" height="55">
-                        <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: Arial, sans-serif; font-size: 7.5px; border: 1px solid #cbd5e1; background-color: #fafafa; padding: 5px; border-radius: 4px; line-height: 1.25; box-sizing: border-box; height: 100%; overflow: hidden; text-align: left;">
-                            {{ $deviation->fishbone_machine ?? 'Pengecekan mesin & alat penunjang operasional produksi.' }}
+                        <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: Arial, sans-serif; font-size: 7.5px; border: 1px solid #cbd5e1; background-color: #fafafa; padding: 5px; border-radius: 4px; line-height: 1.25; box-sizing: border-box; height: 100%; overflow: hidden; text-align: left; white-space: pre-wrap;">
+                            {!! nl2br(e($deviation->fishbone_machine ?? 'Pengecekan mesin & alat penunjang operasional produksi.')) !!}
                         </div>
                     </foreignObject>
                     <!-- Connector horizontal box to rib -->
@@ -401,8 +401,8 @@
                         </div>
                     </foreignObject>
                     <foreignObject x="285" y="65" width="130" height="55">
-                        <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: Arial, sans-serif; font-size: 7.5px; border: 1px solid #cbd5e1; background-color: #fafafa; padding: 5px; border-radius: 4px; line-height: 1.25; box-sizing: border-box; height: 100%; overflow: hidden; text-align: left;">
-                            {{ $deviation->fishbone_man ?? 'Pemeriksaan kepatuhan personalia & pelatihan higienitas.' }}
+                        <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: Arial, sans-serif; font-size: 7.5px; border: 1px solid #cbd5e1; background-color: #fafafa; padding: 5px; border-radius: 4px; line-height: 1.25; box-sizing: border-box; height: 100%; overflow: hidden; text-align: left; white-space: pre-wrap;">
+                            {!! nl2br(e($deviation->fishbone_man ?? 'Pemeriksaan kepatuhan personalia & pelatihan higienitas.')) !!}
                         </div>
                     </foreignObject>
                     <line x1="415" y1="92" x2="452" y2="92" stroke="#000" stroke-width="1" stroke-dasharray="2,2" />
@@ -415,8 +415,8 @@
                         </div>
                     </foreignObject>
                     <foreignObject x="545" y="65" width="130" height="55">
-                        <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: Arial, sans-serif; font-size: 7.5px; border: 1px solid #cbd5e1; background-color: #fafafa; padding: 5px; border-radius: 4px; line-height: 1.25; box-sizing: border-box; height: 100%; overflow: hidden; text-align: left;">
-                            {{ $deviation->fishbone_method ?? 'Evaluasi prosedur kerja standard (SOP) saat kejadian.' }}
+                        <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: Arial, sans-serif; font-size: 7.5px; border: 1px solid #cbd5e1; background-color: #fafafa; padding: 5px; border-radius: 4px; line-height: 1.25; box-sizing: border-box; height: 100%; overflow: hidden; text-align: left; white-space: pre-wrap;">
+                            {!! nl2br(e($deviation->fishbone_method ?? 'Evaluasi prosedur kerja standard (SOP) saat kejadian.')) !!}
                         </div>
                     </foreignObject>
                     <line x1="675" y1="92" x2="712" y2="92" stroke="#000" stroke-width="1" stroke-dasharray="2,2" />
@@ -430,8 +430,8 @@
                         </div>
                     </foreignObject>
                     <foreignObject x="25" y="280" width="130" height="55">
-                        <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: Arial, sans-serif; font-size: 7.5px; border: 1px solid #cbd5e1; background-color: #fafafa; padding: 5px; border-radius: 4px; line-height: 1.25; box-sizing: border-box; height: 100%; overflow: hidden; text-align: left;">
-                            {{ $deviation->fishbone_milieu ?? 'Pemantauan kondisi lingkungan ruang pengolahan/kelas.' }}
+                        <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: Arial, sans-serif; font-size: 7.5px; border: 1px solid #cbd5e1; background-color: #fafafa; padding: 5px; border-radius: 4px; line-height: 1.25; box-sizing: border-box; height: 100%; overflow: hidden; text-align: left; white-space: pre-wrap;">
+                            {!! nl2br(e($deviation->fishbone_milieu ?? 'Pemantauan kondisi lingkungan ruang pengolahan/kelas.')) !!}
                         </div>
                     </foreignObject>
                     <line x1="155" y1="308" x2="192" y2="308" stroke="#000" stroke-width="1" stroke-dasharray="2,2" />
@@ -444,8 +444,8 @@
                         </div>
                     </foreignObject>
                     <foreignObject x="285" y="280" width="130" height="55">
-                        <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: Arial, sans-serif; font-size: 7.5px; border: 1px solid #cbd5e1; background-color: #fafafa; padding: 5px; border-radius: 4px; line-height: 1.25; box-sizing: border-box; height: 100%; overflow: hidden; text-align: left;">
-                            {{ $deviation->fishbone_measurement ?? 'Verifikasi alat ukur, kalibrasi instrumen, dan IPC.' }}
+                        <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: Arial, sans-serif; font-size: 7.5px; border: 1px solid #cbd5e1; background-color: #fafafa; padding: 5px; border-radius: 4px; line-height: 1.25; box-sizing: border-box; height: 100%; overflow: hidden; text-align: left; white-space: pre-wrap;">
+                            {!! nl2br(e($deviation->fishbone_measurement ?? 'Verifikasi alat ukur, kalibrasi instrumen, dan IPC.')) !!}
                         </div>
                     </foreignObject>
                     <line x1="415" y1="308" x2="452" y2="308" stroke="#000" stroke-width="1" stroke-dasharray="2,2" />
@@ -458,8 +458,8 @@
                         </div>
                     </foreignObject>
                     <foreignObject x="545" y="280" width="130" height="55">
-                        <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: Arial, sans-serif; font-size: 7.5px; border: 1px solid #cbd5e1; background-color: #fafafa; padding: 5px; border-radius: 4px; line-height: 1.25; box-sizing: border-box; height: 100%; overflow: hidden; text-align: left;">
-                            {{ $deviation->fishbone_materials ?? 'Analisis bahan awal, kemasan primer, & identitas bets.' }}
+                        <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: Arial, sans-serif; font-size: 7.5px; border: 1px solid #cbd5e1; background-color: #fafafa; padding: 5px; border-radius: 4px; line-height: 1.25; box-sizing: border-box; height: 100%; overflow: hidden; text-align: left; white-space: pre-wrap;">
+                            {!! nl2br(e($deviation->fishbone_materials ?? 'Analisis bahan awal, kemasan primer, & identitas bets.')) !!}
                         </div>
                     </foreignObject>
                     <line x1="675" y1="308" x2="712" y2="308" stroke="#000" stroke-width="1" stroke-dasharray="2,2" />

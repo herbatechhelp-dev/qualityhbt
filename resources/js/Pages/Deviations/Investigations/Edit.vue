@@ -39,17 +39,45 @@ watch(
     }
 );
 
+// Define helpers for line arrays
+const parseLines = (val) => {
+    if (!val) return [''];
+    return val.split('\n').filter(line => line.trim().length > 0);
+};
+
+const machineLines = ref(parseLines(props.deviation.fishbone_machine || 'Pengecekan mesin & alat penunjang operasional produksi.'));
+const manLines = ref(parseLines(props.deviation.fishbone_man || 'Pemeriksaan kepatuhan personalia & pelatihan higienitas.'));
+const methodLines = ref(parseLines(props.deviation.fishbone_method || 'Evaluasi prosedur kerja standard (SOP) saat kejadian.'));
+const milieuLines = ref(parseLines(props.deviation.fishbone_milieu || 'Pemantauan kondisi lingkungan ruang pengolahan/kelas.'));
+const measurementLines = ref(parseLines(props.deviation.fishbone_measurement || 'Verifikasi alat ukur, kalibrasi instrumen, dan IPC.'));
+const materialsLines = ref(parseLines(props.deviation.fishbone_materials || 'Analisis bahan awal, kemasan primer, & identitas bets.'));
+const rootCauseLines = ref(parseLines(props.deviation.root_cause || 'Berdasarkan investigasi fishbone, akar masalah disebabkan oleh:\n- Kriteria kesesuaian operasional alat/mesin yang belum terkalibrasi berkala.\n- Diperlukan peningkatan pengawasan In Process Control (IPC).'));
+const riskIdLines = ref(parseLines(props.deviation.risk_identification_details || '1. Potensi imbas pada bets produk terkait yang diproses pada hari yang sama.\n2. Risiko penurunan spesifikasi mutu atau stabilitas produk akhir.'));
+const riskAnalysisLines = ref(parseLines(props.deviation.risk_analysis_details || 'Kajian risiko dilakukan menggunakan Failure Mode and Effects Analysis (FMEA) untuk menghitung tingkat keparahan (S), frekuensi (O), dan kemampuan deteksi (D).'));
+
+const addLine = (linesArray) => {
+    linesArray.push('');
+};
+
+const removeLine = (linesArray, idx) => {
+    if (linesArray.length > 1) {
+        linesArray.splice(idx, 1);
+    } else {
+        linesArray[0] = '';
+    }
+};
+
 // Define form state
 const form = useForm({
-    fishbone_machine: props.deviation.fishbone_machine || 'Pengecekan mesin & alat penunjang operasional produksi.',
-    fishbone_man: props.deviation.fishbone_man || 'Pemeriksaan kepatuhan personalia & pelatihan higienitas.',
-    fishbone_method: props.deviation.fishbone_method || 'Evaluasi prosedur kerja standard (SOP) saat kejadian.',
-    fishbone_milieu: props.deviation.fishbone_milieu || 'Pemantauan kondisi lingkungan ruang pengolahan/kelas.',
-    fishbone_measurement: props.deviation.fishbone_measurement || 'Verifikasi alat ukur, kalibrasi instrumen, dan IPC.',
-    fishbone_materials: props.deviation.fishbone_materials || 'Analisis bahan awal, kemasan primer, & identitas bets.',
-    root_cause: props.deviation.root_cause || 'Berdasarkan investigasi fishbone, akar masalah disebabkan oleh:\n- Kriteria kesesuaian operasional alat/mesin yang belum terkalibrasi berkala.\n- Diperlukan peningkatan pengawasan In Process Control (IPC).',
-    risk_identification_details: props.deviation.risk_identification_details || '1. Potensi imbas pada bets produk terkait yang diproses pada hari yang sama.\n2. Risiko penurunan spesifikasi mutu atau stabilitas produk akhir.',
-    risk_analysis_details: props.deviation.risk_analysis_details || 'Kajian risiko dilakukan menggunakan Failure Mode and Effects Analysis (FMEA) untuk menghitung tingkat keparahan (S), frekuensi (O), dan kemampuan deteksi (D).',
+    fishbone_machine: props.deviation.fishbone_machine || '',
+    fishbone_man: props.deviation.fishbone_man || '',
+    fishbone_method: props.deviation.fishbone_method || '',
+    fishbone_milieu: props.deviation.fishbone_milieu || '',
+    fishbone_measurement: props.deviation.fishbone_measurement || '',
+    fishbone_materials: props.deviation.fishbone_materials || '',
+    root_cause: props.deviation.root_cause || '',
+    risk_identification_details: props.deviation.risk_identification_details || '',
+    risk_analysis_details: props.deviation.risk_analysis_details || '',
     risk_analysis: props.deviation.risk_analysis || [],
 });
 
@@ -86,6 +114,16 @@ const getRpnClass = (rpn) => {
 };
 
 const submitForm = () => {
+    form.fishbone_machine = machineLines.value.filter(l => l.trim()).join('\n');
+    form.fishbone_man = manLines.value.filter(l => l.trim()).join('\n');
+    form.fishbone_method = methodLines.value.filter(l => l.trim()).join('\n');
+    form.fishbone_milieu = milieuLines.value.filter(l => l.trim()).join('\n');
+    form.fishbone_measurement = measurementLines.value.filter(l => l.trim()).join('\n');
+    form.fishbone_materials = materialsLines.value.filter(l => l.trim()).join('\n');
+    form.root_cause = rootCauseLines.value.filter(l => l.trim()).join('\n');
+    form.risk_identification_details = riskIdLines.value.filter(l => l.trim()).join('\n');
+    form.risk_analysis_details = riskAnalysisLines.value.filter(l => l.trim()).join('\n');
+
     form.post(route('deviations.investigations.update', props.deviation.id), {
         onSuccess: () => {
             // optional success hook
@@ -127,40 +165,112 @@ const submitForm = () => {
                         🐟 Diagram Fishbone (Analisis Penyebab 6M)
                     </h3>
                     <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 20px;">
-                        Isi analisis penyebab untuk masing-masing parameter 6M di bawah ini.
+                        Isi analisis penyebab untuk masing-masing parameter 6M di bawah ini. Gunakan tombol "➕ Tambah" untuk menambah baris poin analisa.
                     </p>
 
                     <div style="display: flex; flex-direction: column; gap: 16px;">
                         <div class="grid-2" style="gap: 16px;">
                             <div class="form-group">
-                                <label class="form-label" style="font-weight: 600;">⚙️ Machine (Mesin/Peralatan)</label>
-                                <textarea v-model="form.fishbone_machine" class="form-textarea" rows="2" placeholder="Detail pengecekan mesin..."></textarea>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                    <label class="form-label" style="font-weight: 600; margin-bottom: 0;">⚙️ Machine (Mesin/Peralatan)</label>
+                                    <button type="button" @click="addLine(machineLines)" class="btn btn-secondary" style="padding: 2px 8px; font-size: 0.725rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; background-color: var(--accent-color); color: white; border-color: var(--accent-color);">
+                                        ➕ Tambah
+                                    </button>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 8px;">
+                                    <div v-for="(line, idx) in machineLines" :key="idx" style="display: flex; gap: 8px; align-items: center;">
+                                        <input type="text" v-model="machineLines[idx]" class="form-input" style="flex-grow: 1; padding: 6px 12px; font-size: 0.85rem;" placeholder="Pengecekan mesin & alat penunjang..." />
+                                        <button type="button" @click="removeLine(machineLines, idx)" class="btn btn-danger" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; flex-shrink: 0;" title="Hapus">
+                                            🗑️
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                             <div class="form-group">
-                                <label class="form-label" style="font-weight: 600;">👥 Man (Personel/Manusia)</label>
-                                <textarea v-model="form.fishbone_man" class="form-textarea" rows="2" placeholder="Detail pemeriksaan personel..."></textarea>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                    <label class="form-label" style="font-weight: 600; margin-bottom: 0;">👥 Man (Personel/Manusia)</label>
+                                    <button type="button" @click="addLine(manLines)" class="btn btn-secondary" style="padding: 2px 8px; font-size: 0.725rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; background-color: var(--accent-color); color: white; border-color: var(--accent-color);">
+                                        ➕ Tambah
+                                    </button>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 8px;">
+                                    <div v-for="(line, idx) in manLines" :key="idx" style="display: flex; gap: 8px; align-items: center;">
+                                        <input type="text" v-model="manLines[idx]" class="form-input" style="flex-grow: 1; padding: 6px 12px; font-size: 0.85rem;" placeholder="Pemeriksaan kepatuhan personalia..." />
+                                        <button type="button" @click="removeLine(manLines, idx)" class="btn btn-danger" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; flex-shrink: 0;" title="Hapus">
+                                            🗑️
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
                         <div class="grid-2" style="gap: 16px;">
                             <div class="form-group">
-                                <label class="form-label" style="font-weight: 600;">📋 Method/Process (Metode/Proses)</label>
-                                <textarea v-model="form.fishbone_method" class="form-textarea" rows="2" placeholder="Evaluasi SOP/prosedur..."></textarea>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                    <label class="form-label" style="font-weight: 600; margin-bottom: 0;">📋 Method/Process (Metode/Proses)</label>
+                                    <button type="button" @click="addLine(methodLines)" class="btn btn-secondary" style="padding: 2px 8px; font-size: 0.725rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; background-color: var(--accent-color); color: white; border-color: var(--accent-color);">
+                                        ➕ Tambah
+                                    </button>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 8px;">
+                                    <div v-for="(line, idx) in methodLines" :key="idx" style="display: flex; gap: 8px; align-items: center;">
+                                        <input type="text" v-model="methodLines[idx]" class="form-input" style="flex-grow: 1; padding: 6px 12px; font-size: 0.85rem;" placeholder="Evaluasi prosedur kerja standard..." />
+                                        <button type="button" @click="removeLine(methodLines, idx)" class="btn btn-danger" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; flex-shrink: 0;" title="Hapus">
+                                            🗑️
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                             <div class="form-group">
-                                <label class="form-label" style="font-weight: 600;">🌍 Milieu (Lingkungan)</label>
-                                <textarea v-model="form.fishbone_milieu" class="form-textarea" rows="2" placeholder="Pemantauan kondisi lingkungan..."></textarea>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                    <label class="form-label" style="font-weight: 600; margin-bottom: 0;">🌍 Milieu (Lingkungan)</label>
+                                    <button type="button" @click="addLine(milieuLines)" class="btn btn-secondary" style="padding: 2px 8px; font-size: 0.725rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; background-color: var(--accent-color); color: white; border-color: var(--accent-color);">
+                                        ➕ Tambah
+                                    </button>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 8px;">
+                                    <div v-for="(line, idx) in milieuLines" :key="idx" style="display: flex; gap: 8px; align-items: center;">
+                                        <input type="text" v-model="milieuLines[idx]" class="form-input" style="flex-grow: 1; padding: 6px 12px; font-size: 0.85rem;" placeholder="Pemantauan kondisi lingkungan..." />
+                                        <button type="button" @click="removeLine(milieuLines, idx)" class="btn btn-danger" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; flex-shrink: 0;" title="Hapus">
+                                            🗑️
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
                         <div class="grid-2" style="gap: 16px;">
                             <div class="form-group">
-                                <label class="form-label" style="font-weight: 600;">📐 Measurement (Pengukuran/IPC)</label>
-                                <textarea v-model="form.fishbone_measurement" class="form-textarea" rows="2" placeholder="Verifikasi alat ukur/IPC..."></textarea>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                    <label class="form-label" style="font-weight: 600; margin-bottom: 0;">📐 Measurement (Pengukuran/IPC)</label>
+                                    <button type="button" @click="addLine(measurementLines)" class="btn btn-secondary" style="padding: 2px 8px; font-size: 0.725rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; background-color: var(--accent-color); color: white; border-color: var(--accent-color);">
+                                        ➕ Tambah
+                                    </button>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 8px;">
+                                    <div v-for="(line, idx) in measurementLines" :key="idx" style="display: flex; gap: 8px; align-items: center;">
+                                        <input type="text" v-model="measurementLines[idx]" class="form-input" style="flex-grow: 1; padding: 6px 12px; font-size: 0.85rem;" placeholder="Verifikasi alat ukur/kalibrasi..." />
+                                        <button type="button" @click="removeLine(measurementLines, idx)" class="btn btn-danger" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; flex-shrink: 0;" title="Hapus">
+                                            🗑️
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                             <div class="form-group">
-                                <label class="form-label" style="font-weight: 600;">📦 Materials (Bahan Awal/Kemasan)</label>
-                                <textarea v-model="form.fishbone_materials" class="form-textarea" rows="2" placeholder="Analisis bahan baku/bets..."></textarea>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                    <label class="form-label" style="font-weight: 600; margin-bottom: 0;">📦 Materials (Bahan Awal/Kemasan)</label>
+                                    <button type="button" @click="addLine(materialsLines)" class="btn btn-secondary" style="padding: 2px 8px; font-size: 0.725rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; background-color: var(--accent-color); color: white; border-color: var(--accent-color);">
+                                        ➕ Tambah
+                                    </button>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 8px;">
+                                    <div v-for="(line, idx) in materialsLines" :key="idx" style="display: flex; gap: 8px; align-items: center;">
+                                        <input type="text" v-model="materialsLines[idx]" class="form-input" style="flex-grow: 1; padding: 6px 12px; font-size: 0.85rem;" placeholder="Analisis bahan awal/bets..." />
+                                        <button type="button" @click="removeLine(materialsLines, idx)" class="btn btn-danger" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; flex-shrink: 0;" title="Hapus">
+                                            🗑️
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -174,18 +284,54 @@ const submitForm = () => {
 
                     <div style="display: flex; flex-direction: column; gap: 16px;">
                         <div class="form-group">
-                            <label class="form-label" style="font-weight: 600;">🔥 Akar Masalah (Root Cause)</label>
-                            <textarea v-model="form.root_cause" class="form-textarea" rows="3" placeholder="Jelaskan akar masalah utama berdasarkan analisis fishbone..."></textarea>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                <label class="form-label" style="font-weight: 600; margin-bottom: 0;">🔥 Akar Masalah (Root Cause)</label>
+                                <button type="button" @click="addLine(rootCauseLines)" class="btn btn-secondary" style="padding: 2px 8px; font-size: 0.725rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; background-color: var(--accent-color); color: white; border-color: var(--accent-color);">
+                                    ➕ Tambah
+                                </button>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <div v-for="(line, idx) in rootCauseLines" :key="idx" style="display: flex; gap: 8px; align-items: center;">
+                                    <input type="text" v-model="rootCauseLines[idx]" class="form-input" style="flex-grow: 1; padding: 6px 12px; font-size: 0.85rem;" placeholder="Baris kesimpulan akar masalah..." />
+                                    <button type="button" @click="removeLine(rootCauseLines, idx)" class="btn btn-danger" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; flex-shrink: 0;" title="Hapus">
+                                        🗑️
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label" style="font-weight: 600;">⚠️ Identifikasi Risiko</label>
-                            <textarea v-model="form.risk_identification_details" class="form-textarea" rows="2" placeholder="Tuliskan poin-poin risiko yang teridentifikasi..."></textarea>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                <label class="form-label" style="font-weight: 600; margin-bottom: 0;">⚠️ Identifikasi Risiko</label>
+                                <button type="button" @click="addLine(riskIdLines)" class="btn btn-secondary" style="padding: 2px 8px; font-size: 0.725rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; background-color: var(--accent-color); color: white; border-color: var(--accent-color);">
+                                    ➕ Tambah
+                                </button>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <div v-for="(line, idx) in riskIdLines" :key="idx" style="display: flex; gap: 8px; align-items: center;">
+                                    <input type="text" v-model="riskIdLines[idx]" class="form-input" style="flex-grow: 1; padding: 6px 12px; font-size: 0.85rem;" placeholder="Poin identifikasi risiko..." />
+                                    <button type="button" @click="removeLine(riskIdLines, idx)" class="btn btn-danger" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; flex-shrink: 0;" title="Hapus">
+                                        🗑️
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label" style="font-weight: 600;">📊 Pengantar Analisa Risiko</label>
-                            <textarea v-model="form.risk_analysis_details" class="form-textarea" rows="2" placeholder="Kajian risiko FMEA..."></textarea>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                <label class="form-label" style="font-weight: 600;">📊 Pengantar Analisa Risiko</label>
+                                <button type="button" @click="addLine(riskAnalysisLines)" class="btn btn-secondary" style="padding: 2px 8px; font-size: 0.725rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; background-color: var(--accent-color); color: white; border-color: var(--accent-color);">
+                                    ➕ Tambah
+                                </button>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <div v-for="(line, idx) in riskAnalysisLines" :key="idx" style="display: flex; gap: 8px; align-items: center;">
+                                    <input type="text" v-model="riskAnalysisLines[idx]" class="form-input" style="flex-grow: 1; padding: 6px 12px; font-size: 0.85rem;" placeholder="Pengantar kajian FMEA..." />
+                                    <button type="button" @click="removeLine(riskAnalysisLines, idx)" class="btn btn-danger" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; flex-shrink: 0;" title="Hapus">
+                                        🗑️
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

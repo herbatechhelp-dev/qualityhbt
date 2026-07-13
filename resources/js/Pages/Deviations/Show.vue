@@ -193,6 +193,14 @@ const getStatusClass = (status) => {
                     </template>
                     <!-- Print buttons (for non-DRAFT) -->
                     <template v-if="deviation.status !== 'DRAFT'">
+                        <Link 
+                            v-if="isOwner || currentUser.role === 'qa' || currentUser.role === 'superadmin'"
+                            :href="route('deviations.investigations.edit', deviation.id)" 
+                            class="btn btn-primary" 
+                            style="font-size:0.85rem; display:inline-flex; align-items:center; gap:6px; background-color: #6366f1; border-color: #6366f1; color: white;"
+                        >
+                            ✍️ Input Penyelidikan
+                        </Link>
                         <button type="button" @click="openPrintPreview(route('deviations.print-dr', deviation.id), 'Form Deviation Report (DR)')" class="btn btn-secondary" style="font-size:0.85rem; display:inline-flex; align-items:center; gap:6px; background-color: #10b981; border-color: #10b981; color: white;">
                             🖨️ Cetak DR
                         </button>

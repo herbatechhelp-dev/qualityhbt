@@ -11,7 +11,7 @@ const props = defineProps({
 const getRoleDisplayName = (role) => {
     switch (role) {
         case 'superadmin': return 'Super Admin';
-        case 'qa': return 'QA Officer';
+        case 'qa': return 'QA Verifikator';
         case 'head_of_quality': return 'Head of Quality';
         case 'operational_manager': return 'Operational Manager';
         case 'general_manager': return 'General Manager';
@@ -233,7 +233,7 @@ const deleteUser = (user) => {
                                 <label class="form-label">Role Pengguna</label>
                                 <select class="form-select" v-model="form.role">
                                     <option value="initiator">Initiator</option>
-                                    <option value="qa">QA Officer</option>
+                                    <option value="qa">QA Verifikator</option>
                                     <option value="head_of_quality">Head of Quality (HU)</option>
                                     <option value="operational_manager">Operational Manager (OM)</option>
                                     <option value="general_manager">General Manager (GM)</option>

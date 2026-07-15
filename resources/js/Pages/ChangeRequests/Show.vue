@@ -807,7 +807,7 @@ const getStatusClass = (status) => {
                                         {{ qaForm.qa_verification_data.qa_1.submitted ? '✓ Sudah Diajukan' : 'Belum Diajukan' }}
                                     </strong>
                                 </div>
-                                <button v-if="!qaForm.qa_verification_data.qa_1.submitted" type="button" @click="submitToManagement" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.85rem; font-weight: 600;" :disabled="!canSubmitToManagement" :title="!canSubmitToManagement ? 'Hanya QA Officer yang dapat mengajukan persetujuan' : ''">
+                                <button v-if="!qaForm.qa_verification_data.qa_1.submitted" type="button" @click="submitToManagement" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.85rem; font-weight: 600;" :disabled="!canSubmitToManagement" :title="!canSubmitToManagement ? 'Hanya QA Verifikator yang dapat mengajukan persetujuan' : ''">
                                     🚀 Ajukan Persetujuan
                                 </button>
                             </div>

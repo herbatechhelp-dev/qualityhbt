@@ -321,7 +321,7 @@ onUnmounted(() => {
                         <div class="demo-header">Akun Uji Coba Demo:</div>
                         <div class="demo-list">
                             <div>Inisiator: <strong>initiator@qms.com</strong> / password</div>
-                            <div>QA Officer: <strong>qa@qms.com</strong> / password</div>
+                            <div>QA Verifikator: <strong>qa@qms.com</strong> / password</div>
                         </div>
                     </div>
                 </form>

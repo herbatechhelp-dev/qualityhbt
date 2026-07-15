@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
         \App\Models\User::firstOrCreate(
             ['email' => 'qa@qms.com'],
             [
-                'name' => 'QA Officer',
+                'name' => 'QA Verifikator',
                 'password' => 'password',
                 'role' => 'qa',
             ]

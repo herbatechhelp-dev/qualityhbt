@@ -63,7 +63,7 @@ class DeviationController extends Controller
     {
         $request->validate([
             'department'                  => 'required|string|max:255',
-            'pic'                         => 'nullable|string|max:255',
+            'pic'                         => 'required|string|max:255',
             'tanggal_temuan'              => 'nullable|date',
             'description'                 => 'required|string',
             'jenis_penyimpangan'          => 'nullable|array',
@@ -81,6 +81,9 @@ class DeviationController extends Controller
             'new_attachment_descriptions' => 'nullable|array',
             'risk_analysis'               => 'nullable|array',
             'submit_type'                 => 'required|in:draft,submit',
+        ], [], [
+            'department' => 'No. Bets / Alat / Dokumen / Identitas lainnya',
+            'pic'        => 'Nama Produk / Proses / RM / PM / Sistem / Alat',
         ]);
 
         // Generate deviation number only if submitting
@@ -195,7 +198,7 @@ class DeviationController extends Controller
 
         $request->validate([
             'department'                  => 'required|string|max:255',
-            'pic'                         => 'nullable|string|max:255',
+            'pic'                         => 'required|string|max:255',
             'tanggal_temuan'              => 'nullable|date',
             'description'                 => 'required|string',
             'jenis_penyimpangan'          => 'nullable|array',
@@ -213,6 +216,9 @@ class DeviationController extends Controller
             'new_attachment_descriptions' => 'nullable|array',
             'risk_analysis'               => 'nullable|array',
             'submit_type'                 => 'required|in:draft,submit',
+        ], [], [
+            'department' => 'No. Bets / Alat / Dokumen / Identitas lainnya',
+            'pic'        => 'Nama Produk / Proses / RM / PM / Sistem / Alat',
         ]);
 
         $status = $request->submit_type === 'submit' ? 'OPEN' : 'DRAFT';
@@ -346,11 +352,20 @@ class DeviationController extends Controller
         }
 
         $request->validate([
-            'risk_analysis' => 'nullable|array',
+            'risk_analysis'     => 'nullable|array',
+            'pic'               => 'required|string|max:255',
+            'department'        => 'required|string|max:255',
+            'evaluasi_tindakan' => 'nullable|array',
+        ], [], [
+            'department' => 'No. Bets / Alat / Dokumen / Identitas lainnya',
+            'pic'        => 'Nama Produk / Proses / RM / PM / Sistem / Alat',
         ]);
 
         $deviation->update([
-            'risk_analysis' => $request->risk_analysis ?? [],
+            'risk_analysis'     => $request->risk_analysis ?? [],
+            'pic'               => $request->pic,
+            'department'        => $request->department,
+            'evaluasi_tindakan' => $request->evaluasi_tindakan,
         ]);
 
         return redirect()->route('deviations.show', $deviation->id)->with('success', 'Analisis Risiko FMEA berhasil diperbarui oleh QA.');

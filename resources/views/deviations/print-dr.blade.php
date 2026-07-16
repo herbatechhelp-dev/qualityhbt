@@ -226,8 +226,30 @@
                         @endphp
                         <div style="margin-bottom: 8px;">
                             @foreach($allStages as $stage)
+                                @php
+                                    $isChecked = false;
+                                    $detailText = '';
+                                    foreach ($stages as $s) {
+                                        if ($s === $stage) {
+                                            $isChecked = true;
+                                            break;
+                                        }
+                                        if ($stage === 'Lain-lain' && (str_starts_with($s, 'Lain-lain:') || str_starts_with($s, 'Lainnya:'))) {
+                                            $isChecked = true;
+                                            $parts = explode(':', $s, 2);
+                                            $detailText = ' (' . trim($parts[1]) . ')';
+                                            break;
+                                        }
+                                        // Fallback check for old matching values
+                                        if ($stage === 'Lain-lain' && !in_array($s, $allStages) && $s !== 'Lainnya') {
+                                            $isChecked = true;
+                                            $detailText = ' (' . $s . ')';
+                                            break;
+                                        }
+                                    }
+                                @endphp
                                 <div class="chk-container">
-                                    <span class="chk-box">{{ in_array($stage, $stages) ? '✓' : '' }}</span> {{ $stage }}
+                                    <span class="chk-box">{{ $isChecked ? '✓' : '' }}</span> {{ $stage }}{{ $detailText }}
                                 </div>
                             @endforeach
                         </div>
@@ -239,8 +261,30 @@
                         @endphp
                         <div>
                             @foreach($allAffects as $affect)
+                                @php
+                                    $isChecked = false;
+                                    $detailText = '';
+                                    foreach ($affects as $a) {
+                                        if ($a === $affect) {
+                                            $isChecked = true;
+                                            break;
+                                        }
+                                        if ($affect === 'Lain-lain' && (str_starts_with($a, 'Lain-lain:') || str_starts_with($a, 'Lainnya:'))) {
+                                            $isChecked = true;
+                                            $parts = explode(':', $a, 2);
+                                            $detailText = ' (' . trim($parts[1]) . ')';
+                                            break;
+                                        }
+                                        // Fallback check for old matching values
+                                        if ($affect === 'Lain-lain' && !in_array($a, $allAffects) && $a !== 'Lainnya') {
+                                            $isChecked = true;
+                                            $detailText = ' (' . $a . ')';
+                                            break;
+                                        }
+                                    }
+                                @endphp
                                 <div class="chk-container">
-                                    <span class="chk-box">{{ in_array($affect, $affects) ? '✓' : '' }}</span> {{ $affect }}
+                                    <span class="chk-box">{{ $isChecked ? '✓' : '' }}</span> {{ $affect }}{{ $detailText }}
                                 </div>
                             @endforeach
                         </div>
@@ -386,13 +430,13 @@
                         @endphp
                         <div style="display: flex; flex-direction: column; gap: 6px; margin-left: 10px;">
                             <div>
-                                <span class="chk-box">{{ ($deviation->status === 'APPROVED' && $maxRpn > 200) ? '✓' : '' }}</span> Kritikal (C)
+                                <span class="chk-box">{{ ($maxRpn >= 81) ? '✓' : '' }}</span> Kritikal (C)
                             </div>
                             <div>
-                                <span class="chk-box">{{ ($deviation->status === 'APPROVED' && $maxRpn > 50 && $maxRpn <= 200) ? '✓' : '' }}</span> Mayor (M)
+                                <span class="chk-box">{{ ($maxRpn >= 9 && $maxRpn <= 80) ? '✓' : '' }}</span> Mayor (M)
                             </div>
                             <div>
-                                <span class="chk-box">{{ ($deviation->status === 'APPROVED' && $maxRpn <= 50) ? '✓' : '' }}</span> minor (m)
+                                <span class="chk-box">{{ ($maxRpn > 0 && $maxRpn <= 3) ? '✓' : '' }}</span> minor (m)
                             </div>
                         </div>
                     </td>
@@ -400,6 +444,17 @@
             </table>
 
             <!-- D. Evaluasi terhadap Laporan, Tindakan dan Risiko -->
+            @php
+                $evaluasi = $deviation->evaluasi_tindakan ?? [];
+                $jenisPenyimpanganEval = $evaluasi['jenis_penyimpangan'] ?? 'Non Bets';
+                $tindakanDiusulkan = $evaluasi['tindakan_diusulkan'] ?? [];
+                $noFormOlahUlang = $evaluasi['no_form_olah_ulang'] ?? '';
+                $fusStabilityChoice = $evaluasi['fus_stability_choice'] ?? '';
+
+                $isOlahUlangChecked = in_array('olah_ulang', $tindakanDiusulkan);
+                $isFusChecked = in_array('fus_stability', $tindakanDiusulkan);
+                $isLainLainChecked = in_array('lain_lain', $tindakanDiusulkan);
+            @endphp
             <table class="form-table" style="margin-top: 10px;">
                 <tr>
                     <td class="bg-light label-bold">D. Evaluasi terhadap Laporan, Tindakan dan Risiko</td>
@@ -408,23 +463,23 @@
                     <td>
                         <div class="label-bold" style="margin-bottom: 6px;">I. Jenis Penyimpangan :</div>
                         <div style="display: flex; gap: 40px; margin-bottom: 12px; margin-left: 10px;">
-                            <div><span class="chk-box"></span> Bets</div>
-                            <div><span class="chk-box">✓</span> Non Bets</div>
+                            <div><span class="chk-box">{{ $jenisPenyimpanganEval === 'Bets' ? '✓' : '' }}</span> Bets</div>
+                            <div><span class="chk-box">{{ $jenisPenyimpanganEval === 'Non Bets' ? '✓' : '' }}</span> Non Bets</div>
                         </div>
 
                         <div class="label-bold" style="margin-bottom: 6px; border-top: 1px dashed #ccc; padding-top: 6px;">II. Tindakan yang diusulkan (dapat diusulkan lebih dari satu) :</div>
                         <table style="width: 100%; border: none;">
                             <tr style="height: 22px;">
-                                <td style="border: none; width: 40%; padding: 2px;"><span class="chk-box"></span> Produk diolah ulang</td>
-                                <td style="border: none; padding: 2px;">: (No. form olah ulang .....................................................)</td>
+                                <td style="border: none; width: 40%; padding: 2px;"><span class="chk-box">{{ $isOlahUlangChecked ? '✓' : '' }}</span> Produk diolah ulang</td>
+                                <td style="border: none; padding: 2px;">: (No. form olah ulang {{ $isOlahUlangChecked && $noFormOlahUlang ? $noFormOlahUlang : '.....................................................' }})</td>
                             </tr>
                             <tr style="height: 22px;">
-                                <td style="border: none; padding: 2px;"><span class="chk-box"></span> FUS Stability</td>
-                                <td style="border: none; padding: 2px;">: &nbsp; <span class="chk-box"></span> Ya &nbsp; &nbsp; &nbsp; <span class="chk-box"></span> Tidak</td>
+                                <td style="border: none; padding: 2px;"><span class="chk-box">{{ $isFusChecked ? '✓' : '' }}</span> FUS Stability</td>
+                                <td style="border: none; padding: 2px;">: &nbsp; <span class="chk-box">{{ ($isFusChecked && $fusStabilityChoice === 'Ya') ? '✓' : '' }}</span> Ya &nbsp; &nbsp; &nbsp; <span class="chk-box">{{ ($isFusChecked && $fusStabilityChoice === 'Tidak') ? '✓' : '' }}</span> Tidak</td>
                             </tr>
                             <tr style="height: 22px;">
-                                <td style="border: none; padding: 2px;"><span class="chk-box">✓</span> Lain-lain</td>
-                                <td style="border: none; padding: 2px;">: (No. form CAPA : {{ $deviation->capa->capa_number ?? '-' }} )</td>
+                                <td style="border: none; padding: 2px;"><span class="chk-box">{{ ($isLainLainChecked || $deviation->capa) ? '✓' : '' }}</span> Lain-lain</td>
+                                <td style="border: none; padding: 2px;">: (No. form CAPA : {{ $deviation->capa->capa_number ?? ('CAPA/' . $deviation->deviation_number) }} )</td>
                             </tr>
                         </table>
                     </td>

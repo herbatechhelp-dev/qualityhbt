@@ -115,11 +115,11 @@ const getStatusClass = (status) => {
                     </div>
 
                     <div class="qms-filter-item-fixed" style="width: 180px;">
-                        <label class="form-label" style="font-size: 0.775rem;">Departemen Pengaju</label>
+                        <label class="form-label" style="font-size: 0.775rem;">No. Bets / Identitas</label>
                         <input
                             type="text"
                             v-model="department"
-                            placeholder="e.g. Produksi"
+                            placeholder="e.g. Bets atau Kode Alat"
                             class="form-input"
                             style="padding: 8px 12px; font-size: 0.85rem;"
                             @keyup.enter="applyFilters"
@@ -157,7 +157,7 @@ const getStatusClass = (status) => {
                             <th>Tanggal Request</th>
                             <th>No Deviasi</th>
                             <th v-if="isQA">Inisiator</th>
-                            <th>Departemen</th>
+                            <th>No. Bets / Identitas</th>
                             <th>Deviasi Terkait (Deskripsi)</th>
                             <th>Status</th>
                             <th>Action</th>

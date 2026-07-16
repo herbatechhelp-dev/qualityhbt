@@ -72,9 +72,15 @@ const sodGuide = {
     ],
 };
 const getRpnClass = (rpn) => {
-    if (rpn <= 50)  return 'rpn-low';
-    if (rpn <= 200) return 'rpn-medium';
+    if (rpn <= 3)  return 'rpn-low';
+    if (rpn <= 80) return 'rpn-medium';
     return 'rpn-high';
+};
+
+const getRpnLabel = (rpn) => {
+    if (rpn <= 3)  return 'Minor';
+    if (rpn <= 80) return 'Mayor';
+    return 'Kritikal';
 };
 
 // ─── QA Decision form ────────────────────────────────────────────────────────
@@ -101,11 +107,27 @@ const submitDecision = () => {
 // ─── FMEA Inline Editing Form ───────────────────────────────────────────────
 const isEditingFmea = ref(false);
 const fmeaForm = useForm({
-    risk_analysis: JSON.parse(JSON.stringify(props.deviation.risk_analysis || []))
+    risk_analysis: JSON.parse(JSON.stringify(props.deviation.risk_analysis || [])),
+    pic: props.deviation.pic || '',
+    department: props.deviation.department || '',
+    evaluasi_tindakan: {
+        jenis_penyimpangan: props.deviation.evaluasi_tindakan?.jenis_penyimpangan || 'Non Bets',
+        tindakan_diusulkan: props.deviation.evaluasi_tindakan?.tindakan_diusulkan || [],
+        no_form_olah_ulang: props.deviation.evaluasi_tindakan?.no_form_olah_ulang || '',
+        fus_stability_choice: props.deviation.evaluasi_tindakan?.fus_stability_choice || '',
+    }
 });
 
 const startEditingFmea = () => {
     fmeaForm.risk_analysis = JSON.parse(JSON.stringify(props.deviation.risk_analysis || []));
+    fmeaForm.pic = props.deviation.pic || '';
+    fmeaForm.department = props.deviation.department || '';
+    fmeaForm.evaluasi_tindakan = {
+        jenis_penyimpangan: props.deviation.evaluasi_tindakan?.jenis_penyimpangan || 'Non Bets',
+        tindakan_diusulkan: props.deviation.evaluasi_tindakan?.tindakan_diusulkan || [],
+        no_form_olah_ulang: props.deviation.evaluasi_tindakan?.no_form_olah_ulang || '',
+        fus_stability_choice: props.deviation.evaluasi_tindakan?.fus_stability_choice || '',
+    };
     isEditingFmea.value = true;
 };
 
@@ -288,14 +310,14 @@ const getStatusClass = (status) => {
                                 <span style="font-weight:600;color:var(--text-primary);">{{ deviation.initiator?.name ?? '-' }}</span>
                             </div>
                             <div>
-                                <span style="font-size:0.75rem;color:var(--text-muted);display:block;text-transform:uppercase;margin-bottom:4px;">Departemen Pengaju</span>
+                                <span style="font-size:0.75rem;color:var(--text-muted);display:block;text-transform:uppercase;margin-bottom:4px;">No. Bets / Alat / Dokumen / Identitas lainnya</span>
                                 <span style="font-weight:600;color:var(--text-primary);">{{ deviation.department }}</span>
                             </div>
                         </div>
 
                         <div class="grid-2" style="margin-bottom:16px;">
                             <div>
-                                <span style="font-size:0.75rem;color:var(--text-muted);display:block;text-transform:uppercase;margin-bottom:4px;">PIC / Penanggung Jawab</span>
+                                <span style="font-size:0.75rem;color:var(--text-muted);display:block;text-transform:uppercase;margin-bottom:4px;">Nama Produk / Proses / RM / PM / Sistem / Alat</span>
                                 <span style="font-weight:600;color:var(--text-primary);">{{ deviation.pic || '-' }}</span>
                             </div>
                             <div>
@@ -465,6 +487,85 @@ const getStatusClass = (status) => {
                                 Mengedit analisis risiko FMEA untuk laporan ini. Klik "💾 Simpan FMEA" untuk memperbarui.
                             </div>
 
+                            <!-- Metadata inputs for QA -->
+                            <div class="grid-2" style="gap:16px; margin-bottom:16px; background:var(--bg-secondary); padding:16px; border-radius:10px; border:1px solid var(--border-color);">
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label class="form-label">Nama Produk / Proses / RM / PM / Sistem / Alat <span style="color:#ef4444;">*</span></label>
+                                    <input type="text" v-model="fmeaForm.pic" class="form-input" placeholder="Nama produk, proses, mesin, atau alat..." required />
+                                    <div v-if="fmeaForm.errors.pic" style="color:#ef4444;font-size:0.8rem;margin-top:4px;">{{ fmeaForm.errors.pic }}</div>
+                                </div>
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label class="form-label">No. Bets / Alat / Dokumen / Identitas lainnya <span style="color:#ef4444;">*</span></label>
+                                    <input type="text" v-model="fmeaForm.department" class="form-input" placeholder="Nomor bets, kode alat, atau identitas dokumen..." required />
+                                    <div v-if="fmeaForm.errors.department" style="color:#ef4444;font-size:0.8rem;margin-top:4px;">{{ fmeaForm.errors.department }}</div>
+                                </div>
+                            </div>
+
+                            <!-- Section D: Evaluasi Tindakan (diisi oleh QA) -->
+                            <div style="margin-bottom: 16px; background:var(--bg-secondary); padding:16px; border-radius:10px; border:1px solid var(--border-color); display:flex; flex-direction:column; gap:16px;">
+                                <h4 style="margin:0; font-size:0.95rem; font-weight:700; color:var(--text-primary); border-bottom:1px dashed var(--border-color); padding-bottom:8px;">
+                                    D. Evaluasi terhadap Laporan, Tindakan dan Risiko (diisi oleh QA)
+                                </h4>
+
+                                <!-- I. Jenis Penyimpangan -->
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label class="form-label" style="font-weight:700;">I. Jenis Penyimpangan</label>
+                                    <div style="display: flex; gap: 20px; align-items: center; margin-top: 6px;">
+                                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9rem; color: var(--text-primary);">
+                                            <input type="radio" value="Bets" v-model="fmeaForm.evaluasi_tindakan.jenis_penyimpangan" style="width: 16px; height: 16px; accent-color: var(--accent-color);" />
+                                            Bets
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9rem; color: var(--text-primary);">
+                                            <input type="radio" value="Non Bets" v-model="fmeaForm.evaluasi_tindakan.jenis_penyimpangan" style="width: 16px; height: 16px; accent-color: var(--accent-color);" />
+                                            Non Bets
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- II. Tindakan yang Diusulkan -->
+                                <div class="form-group" style="margin-bottom:0; display:flex; flex-direction:column; gap:12px;">
+                                    <label class="form-label" style="font-weight:700;">II. Tindakan yang diusulkan (dapat diusulkan lebih dari satu)</label>
+                                    
+                                    <!-- A. Produk diolah ulang -->
+                                    <div style="display:flex; flex-direction:column; gap:6px;">
+                                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9rem; color: var(--text-primary);">
+                                            <input type="checkbox" value="olah_ulang" v-model="fmeaForm.evaluasi_tindakan.tindakan_diusulkan" style="width: 16px; height: 16px; accent-color: var(--accent-color);" />
+                                            Produk diolah ulang
+                                        </label>
+                                        <div v-if="fmeaForm.evaluasi_tindakan.tindakan_diusulkan.includes('olah_ulang')" style="margin-left:24px;">
+                                            <input type="text" v-model="fmeaForm.evaluasi_tindakan.no_form_olah_ulang" class="form-input" placeholder="No. form olah ulang..." style="font-size:0.85rem; padding:6px 12px;" />
+                                        </div>
+                                    </div>
+
+                                    <!-- B. FUS Stability -->
+                                    <div style="display:flex; flex-direction:column; gap:6px;">
+                                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9rem; color: var(--text-primary);">
+                                            <input type="checkbox" value="fus_stability" v-model="fmeaForm.evaluasi_tindakan.tindakan_diusulkan" style="width: 16px; height: 16px; accent-color: var(--accent-color);" />
+                                            FUS Stability
+                                        </label>
+                                        <div v-if="fmeaForm.evaluasi_tindakan.tindakan_diusulkan.includes('fus_stability')" style="margin-left:24px; display:flex; gap:16px; align-items:center;">
+                                            <span style="font-size:0.85rem; color:var(--text-muted);">Pilihan:</span>
+                                            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem; color: var(--text-primary);">
+                                                <input type="radio" value="Ya" v-model="fmeaForm.evaluasi_tindakan.fus_stability_choice" style="width: 14px; height: 14px; accent-color: var(--accent-color);" />
+                                                Ya
+                                            </label>
+                                            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem; color: var(--text-primary);">
+                                                <input type="radio" value="Tidak" v-model="fmeaForm.evaluasi_tindakan.fus_stability_choice" style="width: 14px; height: 14px; accent-color: var(--accent-color);" />
+                                                Tidak
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <!-- C. Lain-lain -->
+                                    <div>
+                                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9rem; color: var(--text-primary);">
+                                            <input type="checkbox" value="lain_lain" v-model="fmeaForm.evaluasi_tindakan.tindakan_diusulkan" style="width: 16px; height: 16px; accent-color: var(--accent-color);" />
+                                            Lain-lain (No. form CAPA otomatis disematkan jika disetujui)
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Empty state in Edit Mode -->
                             <div v-if="fmeaForm.risk_analysis.length === 0"
                                 style="text-align:center;color:var(--text-muted);font-size:0.85rem;padding:24px;background:var(--bg-primary);border:1px dashed var(--border-color);border-radius:8px;">
@@ -599,7 +700,7 @@ const getStatusClass = (status) => {
                                     <span style="font-size:1rem;font-weight:900;" :class="getRpnClass(parseInt(row.rpn))">
                                         RPN = {{ row.rpn }}
                                         <span style="font-size:0.7rem;font-weight:600;margin-left:4px;">
-                                            ({{ parseInt(row.rpn) <= 50 ? 'Rendah' : parseInt(row.rpn) <= 200 ? 'Sedang' : 'Tinggi' }})
+                                            ({{ getRpnLabel(parseInt(row.rpn)) }})
                                         </span>
                                     </span>
                                 </div>
@@ -652,7 +753,7 @@ const getStatusClass = (status) => {
                                         <span style="font-size:0.9rem;font-weight:900;" :class="getRpnClass(parseInt(row.rpn_after || 1))">
                                             Expected RPN = {{ row.rpn_after || 1 }}
                                             <span style="font-size:0.7rem;font-weight:600;margin-left:4px;">
-                                                ({{ parseInt(row.rpn_after || 1) <= 50 ? 'Rendah' : parseInt(row.rpn_after || 1) <= 200 ? 'Sedang' : 'Tinggi' }})
+                                                ({{ getRpnLabel(parseInt(row.rpn_after || 1)) }})
                                             </span>
                                         </span>
                                     </div>
@@ -677,9 +778,38 @@ const getStatusClass = (status) => {
                                 </div>
                             </div>
                         </div>
-
                         <div v-else style="color:var(--text-muted);font-size:0.875rem;padding:12px 0;">📊 Tidak ada data analisis risiko.</div>
-                    </div>
+
+                            <!-- Section D Read-Only Display -->
+                            <div style="margin-top:20px; border-top:1px dashed var(--border-color); padding-top:16px; display:flex; flex-direction:column; gap:12px;">
+                                <h4 style="margin:0; font-size:0.95rem; font-weight:700; color:var(--text-primary);">
+                                    D. Evaluasi terhadap Laporan, Tindakan dan Risiko (diisi oleh QA)
+                                </h4>
+                                <div class="grid-2" style="gap:12px;">
+                                    <div>
+                                        <span style="font-size:0.72rem;color:var(--text-muted);display:block;text-transform:uppercase;margin-bottom:4px;">I. Jenis Penyimpangan</span>
+                                        <span style="font-size:0.875rem;font-weight:600;color:var(--text-primary);">
+                                            {{ deviation.evaluasi_tindakan?.jenis_penyimpangan || 'Non Bets' }}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span style="font-size:0.72rem;color:var(--text-muted);display:block;text-transform:uppercase;margin-bottom:4px;">II. Tindakan yang Diusulkan</span>
+                                        <div v-if="deviation.evaluasi_tindakan?.tindakan_diusulkan && deviation.evaluasi_tindakan.tindakan_diusulkan.length" style="display:flex; flex-direction:column; gap:4px; font-size:0.85rem; color:var(--text-primary);">
+                                            <div v-if="deviation.evaluasi_tindakan.tindakan_diusulkan.includes('olah_ulang')">
+                                                🔄 Produk diolah ulang <span v-if="deviation.evaluasi_tindakan.no_form_olah_ulang" style="color:var(--text-muted);">({{ deviation.evaluasi_tindakan.no_form_olah_ulang }})</span>
+                                            </div>
+                                            <div v-if="deviation.evaluasi_tindakan.tindakan_diusulkan.includes('fus_stability')">
+                                                🧪 FUS Stability <span v-if="deviation.evaluasi_tindakan.fus_stability_choice" style="color:var(--text-muted);">({{ deviation.evaluasi_tindakan.fus_stability_choice }})</span>
+                                            </div>
+                                            <div v-if="deviation.evaluasi_tindakan.tindakan_diusulkan.includes('lain_lain')">
+                                                📋 Lain-lain <span v-if="deviation.capa" style="color:var(--text-muted);">(No. form CAPA: {{ deviation.capa.capa_number }})</span>
+                                            </div>
+                                        </div>
+                                        <span v-else style="font-size:0.875rem;color:var(--text-muted);">—</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -731,11 +861,11 @@ const getStatusClass = (status) => {
                                 <span class="status-badge" :class="getStatusClass(deviation.status)">{{ deviation.status }}</span>
                             </div>
                             <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border-color);padding-bottom:8px;">
-                                <span style="color:var(--text-muted);">Departemen</span>
+                                <span style="color:var(--text-muted);">No. Bets / Identitas</span>
                                 <strong>{{ deviation.department }}</strong>
                             </div>
                             <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border-color);padding-bottom:8px;">
-                                <span style="color:var(--text-muted);">PIC</span>
+                                <span style="color:var(--text-muted);">Nama Produk / Alat</span>
                                 <strong>{{ deviation.pic || '—' }}</strong>
                             </div>
                             <div style="display:flex;justify-content:space-between;">

@@ -39,6 +39,7 @@ class Deviation extends Model
         'root_cause',
         'risk_identification_details',
         'risk_analysis_details',
+        'evaluasi_tindakan',
     ];
 
     protected $casts = [
@@ -48,6 +49,7 @@ class Deviation extends Model
         'is_production_stopped'      => 'boolean',
         'attachments'                => 'array',
         'risk_analysis'              => 'array',
+        'evaluasi_tindakan'          => 'array',
         'tanggal_temuan'             => 'date',
     ];
 

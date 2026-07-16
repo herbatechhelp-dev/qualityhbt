@@ -109,9 +109,15 @@ const updateRpn = (row) => {
 };
 
 const getRpnClass = (rpn) => {
-    if (rpn <= 50)  return 'rpn-low';
-    if (rpn <= 200) return 'rpn-medium';
+    if (rpn <= 3)  return 'rpn-low';
+    if (rpn <= 80) return 'rpn-medium';
     return 'rpn-high';
+};
+
+const getRpnLabel = (rpn) => {
+    if (rpn <= 3)  return 'Minor';
+    if (rpn <= 80) return 'Mayor';
+    return 'Kritikal';
 };
 
 const submitForm = () => {
@@ -368,7 +374,7 @@ const submitForm = () => {
                         <div style="font-size:0.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:12px;">
                             Risiko #{{ idx + 1 }}
                             <span style="margin-left:12px;font-size:0.8rem;" :class="getRpnClass(row.rpn)">
-                                RPN = {{ row.rpn }}
+                                RPN = {{ row.rpn }} ({{ getRpnLabel(row.rpn) }})
                             </span>
                         </div>
 
@@ -427,7 +433,7 @@ const submitForm = () => {
                             <div style="font-size:0.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:12px;">
                                 Penilaian Risiko Setelah Tindakan (Expected Risk)
                                 <span style="margin-left:12px;font-size:0.8rem;" :class="getRpnClass(row.rpn_after || 1)">
-                                    Expected RPN = {{ row.rpn_after || 1 }}
+                                    Expected RPN = {{ row.rpn_after || 1 }} ({{ getRpnLabel(row.rpn_after || 1) }})
                                 </span>
                             </div>
                             <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">

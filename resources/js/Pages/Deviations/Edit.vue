@@ -13,29 +13,26 @@ const props = defineProps({
 
 // ─── Static options ─────────────────────────────────────────────────────────
 const jenisPenyimpanganOptions = [
-    'Raw Material / Bahan Baku',
-    'Packaging Material / Bahan Kemas',
-    'Finished Good / Produk Jadi',
-    'In-Process / Proses Produksi',
-    'Peralatan / Mesin',
-    'Fasilitas / Lingkungan',
-    'Metode Analisa',
-    'Sistem / Dokumentasi',
-    'Pemasok / Vendor',
-    'Lainnya',
+    'Pengolahan',
+    'Pengemasan',
+    'In Process Control',
+    'Dokumentasi',
+    'Ruangan',
+    'Mesin',
+    'Fasilitas penunjang',
+    'Pemantauan lingkungan / hygiene',
+    'Spesifikasi',
+    'Lain-lain',
 ];
 
 const identifikasiOptions = [
-    'Inspeksi / Pemeriksaan Rutin',
-    'Audit Internal',
-    'Audit Eksternal / BPOM',
-    'Keluhan Pelanggan',
-    'Review Data / Trend Analisis',
-    'Self Inspection',
-    'Pelaporan Karyawan',
-    'Investigasi Insiden',
-    'Monitoring Lingkungan',
-    'Lainnya',
+    'Bahan awal',
+    'Produk antara',
+    'Produk ruahan',
+    'Produk dalam kemasan primer',
+    'Produk jadi',
+    'Bahan pengemas',
+    'Lain-lain',
 ];
 
 // ─── Risk Analysis helpers ────────────────────────────────────────────────
@@ -59,14 +56,64 @@ const sodGuide = {
     ],
 };
 
+// Parse initial options
+const parseInitialStages = (stagesList) => {
+    const parsed = [];
+    let lainnya = '';
+    stagesList.forEach(s => {
+        if (s.startsWith('Lain-lain:')) {
+            parsed.push('Lain-lain');
+            lainnya = s.substring(10).trim();
+        } else if (s.startsWith('Lainnya:')) {
+            parsed.push('Lain-lain');
+            lainnya = s.substring(8).trim();
+        } else if (jenisPenyimpanganOptions.includes(s)) {
+            parsed.push(s);
+        } else if (s === 'Lainnya' || s === 'Lain-lain') {
+            parsed.push('Lain-lain');
+        } else {
+            parsed.push('Lain-lain');
+            lainnya = s;
+        }
+    });
+    return { list: parsed, text: lainnya };
+};
+
+const parseInitialAffects = (affectsList) => {
+    const parsed = [];
+    let lainnya = '';
+    affectsList.forEach(a => {
+        if (a.startsWith('Lain-lain:')) {
+            parsed.push('Lain-lain');
+            lainnya = a.substring(10).trim();
+        } else if (a.startsWith('Lainnya:')) {
+            parsed.push('Lain-lain');
+            lainnya = a.substring(8).trim();
+        } else if (identifikasiOptions.includes(a)) {
+            parsed.push(a);
+        } else if (a === 'Lainnya' || a === 'Lain-lain') {
+            parsed.push('Lain-lain');
+        } else {
+            parsed.push('Lain-lain');
+            lainnya = a;
+        }
+    });
+    return { list: parsed, text: lainnya };
+};
+
+const initialStages = parseInitialStages(props.deviation.jenis_penyimpangan || []);
+const initialAffects = parseInitialAffects(props.deviation.identifikasi_penyimpangan || []);
+
 // ─── Form state ──────────────────────────────────────────────────────────────
 const form = useForm({
     department: props.deviation.department || '',
     pic: props.deviation.pic || '',
     tanggal_temuan: props.deviation.tanggal_temuan || '',
     description: props.deviation.description || '',
-    jenis_penyimpangan: props.deviation.jenis_penyimpangan || [],
-    identifikasi_penyimpangan: props.deviation.identifikasi_penyimpangan || [],
+    jenis_penyimpangan: initialStages.list,
+    jenis_penyimpangan_lainnya: initialStages.text,
+    identifikasi_penyimpangan: initialAffects.list,
+    identifikasi_penyimpangan_lainnya: initialAffects.text,
     is_other_batch_affected: props.deviation.is_other_batch_affected ?? false,
     other_batch_affected_details: props.deviation.other_batch_affected_details || '',
     deviation_frequency: props.deviation.deviation_frequency || 'Tidak Pernah sebelumnya',
@@ -125,9 +172,15 @@ const updateRpn = (row) => {
 };
 
 const getRpnClass = (rpn) => {
-    if (rpn <= 50)  return 'rpn-low';
-    if (rpn <= 200) return 'rpn-medium';
+    if (rpn <= 3)  return 'rpn-low';
+    if (rpn <= 80) return 'rpn-medium';
     return 'rpn-high';
+};
+
+const getRpnLabel = (rpn) => {
+    if (rpn <= 3)  return 'Minor';
+    if (rpn <= 80) return 'Mayor';
+    return 'Kritikal';
 };
 
 // ─── Submit ──────────────────────────────────────────────────────────────────
@@ -136,8 +189,32 @@ const submitForm = (submitType) => {
     form.new_attachments = attachmentFiles.value;
     form.new_attachment_descriptions = attachmentDescs.value;
 
+    const originalStages = [...form.jenis_penyimpangan];
+    const originalAffects = [...form.identifikasi_penyimpangan];
+
+    const finalStages = form.jenis_penyimpangan.map(s => {
+        if (s === 'Lain-lain' && form.jenis_penyimpangan_lainnya) {
+            return `Lain-lain: ${form.jenis_penyimpangan_lainnya}`;
+        }
+        return s;
+    });
+
+    const finalAffects = form.identifikasi_penyimpangan.map(a => {
+        if (a === 'Lain-lain' && form.identifikasi_penyimpangan_lainnya) {
+            return `Lain-lain: ${form.identifikasi_penyimpangan_lainnya}`;
+        }
+        return a;
+    });
+
+    form.jenis_penyimpangan = finalStages;
+    form.identifikasi_penyimpangan = finalAffects;
+
     form.post(route('deviations.update', props.deviation.id), {
         forceFormData: true,
+        onError: () => {
+            form.jenis_penyimpangan = originalStages;
+            form.identifikasi_penyimpangan = originalAffects;
+        }
     });
 };
 </script>
@@ -175,18 +252,18 @@ const submitForm = (submitType) => {
                                 style="opacity:0.6;cursor:not-allowed;" />
                         </div>
                         <div class="form-group" style="margin-bottom:0;">
-                            <label class="form-label">PIC / Penanggung Jawab</label>
+                            <label class="form-label">Nama Produk / Proses / RM / PM / Sistem / Alat <span style="color:#ef4444;">*</span></label>
                             <input id="pic" type="text" v-model="form.pic" class="form-input"
-                                placeholder="Nama penanggung jawab..." />
+                                placeholder="Nama produk, proses, mesin, atau alat..." required />
                         </div>
                     </div>
 
                     <!-- Row 2: Departemen + Tanggal Temuan -->
                     <div class="grid-2" style="margin-bottom:16px;">
                         <div class="form-group" style="margin-bottom:0;">
-                            <label class="form-label">Departemen Pengaju <span style="color:#ef4444;">*</span></label>
+                            <label class="form-label">No. Bets / Alat / Dokumen / Identitas lainnya <span style="color:#ef4444;">*</span></label>
                             <input id="department" type="text" v-model="form.department" class="form-input"
-                                placeholder="e.g. Produksi, QC, R&D" required />
+                                placeholder="Nomor bets, kode alat, atau identitas dokumen..." required />
                             <div v-if="form.errors.department" style="color:#ef4444;font-size:0.8rem;margin-top:4px;">{{ form.errors.department }}</div>
                         </div>
                         <div class="form-group" style="margin-bottom:0;">
@@ -282,6 +359,12 @@ const submitForm = (submitType) => {
                                     {{ opt }}
                                 </label>
                             </div>
+                            <!-- Textbox muncul jika 'Lain-lain' dipilih -->
+                            <div v-if="form.jenis_penyimpangan.includes('Lain-lain')" class="fade-in" style="margin-top:8px;">
+                                <input type="text" v-model="form.jenis_penyimpangan_lainnya" class="form-input"
+                                    placeholder="Sebutkan jenis penyimpangan lainnya..."
+                                    style="font-size:0.875rem;" />
+                            </div>
                         </div>
 
                         <!-- Identifikasi / Cara Ditemukan -->
@@ -294,6 +377,12 @@ const submitForm = (submitType) => {
                                         style="width:16px;height:16px;accent-color:var(--accent-color);" />
                                     {{ opt }}
                                 </label>
+                            </div>
+                            <!-- Textbox muncul jika 'Lain-lain' dipilih -->
+                            <div v-if="form.identifikasi_penyimpangan.includes('Lain-lain')" class="fade-in" style="margin-top:8px;">
+                                <input type="text" v-model="form.identifikasi_penyimpangan_lainnya" class="form-input"
+                                    placeholder="Sebutkan cara identifikasi lainnya..."
+                                    style="font-size:0.875rem;" />
                             </div>
                         </div>
                     </div>
@@ -351,7 +440,7 @@ const submitForm = (submitType) => {
                     </div>
 
                     <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:14px;">
-                        Unggah bukti penyimpangan tambahan (foto, laporan), investigasi (fish bone diagram), atau dokumen pendukung lainnya. Maks. 10 MB per file.
+                        Unggah bukti penyimpangan tambahan (foto, laporan) atau dokumen pendukung lainnya. Maks. 10 MB per file.
                     </div>
 
                     <!-- Attachment rows -->
@@ -412,7 +501,7 @@ const submitForm = (submitType) => {
                         <div style="font-size:0.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:12px;">
                             Risiko #{{ idx + 1 }}
                             <span style="margin-left:12px;font-size:0.8rem;" :class="getRpnClass(row.rpn)">
-                                RPN = {{ row.rpn }}
+                                RPN = {{ row.rpn }} ({{ getRpnLabel(row.rpn) }})
                             </span>
                         </div>
 
@@ -475,7 +564,7 @@ const submitForm = (submitType) => {
                             <div style="font-size:0.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:12px;">
                                 Penilaian Risiko Setelah Tindakan (Residual Risk)
                                 <span style="margin-left:12px;font-size:0.8rem;" :class="getRpnClass(row.rpn_after || 1)">
-                                    Expected RPN = {{ row.rpn_after || 1 }}
+                                    Expected RPN = {{ row.rpn_after || 1 }} ({{ getRpnLabel(row.rpn_after || 1) }})
                                 </span>
                             </div>
                             <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">

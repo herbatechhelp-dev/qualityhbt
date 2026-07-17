@@ -104,6 +104,8 @@ class SuperAdminTest extends TestCase
             'app_logo' => '🚀 Custom Logo',
             'google_spreadsheet_id' => 'new-spreadsheet-id-xyz',
             'google_service_account_json' => '{"type": "service_account"}',
+            'print_logo_type' => 'text',
+            'print_company_name' => 'HERBATECH',
         ]);
 
         $response->assertRedirect();
@@ -111,5 +113,7 @@ class SuperAdminTest extends TestCase
         $this->assertEquals('🚀 Custom Logo', Setting::getValue('app_logo'));
         $this->assertEquals('new-spreadsheet-id-xyz', Setting::getValue('google_spreadsheet_id'));
         $this->assertEquals('{"type": "service_account"}', Setting::getValue('google_service_account_json'));
+        $this->assertEquals('HERBATECH', Setting::getValue('print_company_name'));
+        $this->assertEquals('text', Setting::getValue('print_logo_type'));
     }
 }

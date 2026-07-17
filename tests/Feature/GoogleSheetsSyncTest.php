@@ -71,14 +71,23 @@ class GoogleSheetsSyncTest extends TestCase
         $sheetsMock->spreadsheets_values = $valuesMock;
         $valuesMock->shouldReceive('get')
             ->once()
-            ->with('mocked-spreadsheet-id', 'A6:S')
+            ->with('mocked-spreadsheet-id', 'A1:S')
             ->andReturn($responseMock);
 
         $responseMock->shouldReceive('getValues')
             ->once()
             ->andReturn([
-                // 19 columns structure (A-S):
-                // A: NO | B: JUDUL | C: NO DOKUMEN | D: REV | E: PERUBAHAN | F: NO PERUBAHAN / CR | G: TGL BERLAKU | H: TGL REVIEW | I: TGL REVIEW I | J: TGL REVIEW II | K: PENGGANTI | L: LAMPIRAN | M: NO. CATATAN MUTU | N: DOKUMEN TERKAIT | O: TGL SOSIALISASI | P: DISTRIBUSI | Q: NO PEMUSNAHAN | R: TGL PEMUSNAHAN | S: TEMPAT PENYIMPANAN
+                ['Title: Master Protap List'],
+                [''],
+                [''],
+                [''],
+                [
+                    'NO', 'JUDUL', 'NO DOKUMEN', 'REV', 'PERUBAHAN', 
+                    'NO PERUBAHAN / CR', 'TGL BERLAKU', 'TGL REVIEW', 'TGL REVIEW I', 
+                    'TGL REVIEW II', 'PENGGANTI', 'LAMPIRAN', 'NO. CATATAN MUTU', 
+                    'DOKUMEN TERKAIT', 'TGL SOSIALISASI', 'DISTRIBUSI', 'NO PEMUSNAHAN', 
+                    'TGL PEMUSNAHAN', 'TEMPAT PENYIMPANAN'
+                ],
                 [
                     '1', 
                     'Prosedur Stabilitas Cloud', 

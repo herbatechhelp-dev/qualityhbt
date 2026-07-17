@@ -46,15 +46,15 @@ const parseLines = (val) => {
     return lines.length > 0 ? lines.map(t => ({ text: t })) : [{ text: '' }];
 };
 
-const machineLines = ref(parseLines(props.deviation.fishbone_machine || 'Pengecekan mesin & alat penunjang operasional produksi.'));
-const manLines = ref(parseLines(props.deviation.fishbone_man || 'Pemeriksaan kepatuhan personalia & pelatihan higienitas.'));
-const methodLines = ref(parseLines(props.deviation.fishbone_method || 'Evaluasi prosedur kerja standard (SOP) saat kejadian.'));
-const milieuLines = ref(parseLines(props.deviation.fishbone_milieu || 'Pemantauan kondisi lingkungan ruang pengolahan/kelas.'));
-const measurementLines = ref(parseLines(props.deviation.fishbone_measurement || 'Verifikasi alat ukur, kalibrasi instrumen, dan IPC.'));
-const materialsLines = ref(parseLines(props.deviation.fishbone_materials || 'Analisis bahan awal, kemasan primer, & identitas bets.'));
-const rootCauseLines = ref(parseLines(props.deviation.root_cause || 'Berdasarkan investigasi fishbone, akar masalah disebabkan oleh:\n- Kriteria kesesuaian operasional alat/mesin yang belum terkalibrasi berkala.\n- Diperlukan peningkatan pengawasan In Process Control (IPC).'));
-const riskIdLines = ref(parseLines(props.deviation.risk_identification_details || '1. Potensi imbas pada bets produk terkait yang diproses pada hari yang sama.\n2. Risiko penurunan spesifikasi mutu atau stabilitas produk akhir.'));
-const riskAnalysisLines = ref(parseLines(props.deviation.risk_analysis_details || 'Kajian risiko dilakukan menggunakan Failure Mode and Effects Analysis (FMEA) untuk menghitung tingkat keparahan (S), frekuensi (O), dan kemampuan deteksi (D).'));
+const machineLines = ref(parseLines(props.deviation.fishbone_machine || ''));
+const manLines = ref(parseLines(props.deviation.fishbone_man || ''));
+const methodLines = ref(parseLines(props.deviation.fishbone_method || ''));
+const milieuLines = ref(parseLines(props.deviation.fishbone_milieu || ''));
+const measurementLines = ref(parseLines(props.deviation.fishbone_measurement || ''));
+const materialsLines = ref(parseLines(props.deviation.fishbone_materials || ''));
+const rootCauseLines = ref(parseLines(props.deviation.root_cause || ''));
+const riskIdLines = ref(parseLines(props.deviation.risk_identification_details || ''));
+const riskAnalysisLines = ref(parseLines(props.deviation.risk_analysis_details || ''));
 
 const addLine = (linesArray) => {
     linesArray.push({ text: '' });
@@ -186,7 +186,7 @@ const submitForm = () => {
                                 </div>
                                 <div style="display: flex; flex-direction: column; gap: 8px;">
                                     <div v-for="(line, idx) in machineLines" :key="idx" style="display: flex; gap: 8px; align-items: center;">
-                                        <input type="text" v-model="line.text" class="form-input" style="flex-grow: 1; padding: 6px 12px; font-size: 0.85rem;" placeholder="Pengecekan mesin & alat penunjang..." />
+                                        <input type="text" v-model="line.text" class="form-input" style="flex-grow: 1; padding: 6px 12px; font-size: 0.85rem;" placeholder="Masukkan disini..." />
                                         <button type="button" @click="removeLine(machineLines, idx)" class="btn btn-danger" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; flex-shrink: 0;" title="Hapus">
                                             🗑️
                                         </button>
@@ -202,7 +202,7 @@ const submitForm = () => {
                                 </div>
                                 <div style="display: flex; flex-direction: column; gap: 8px;">
                                     <div v-for="(line, idx) in manLines" :key="idx" style="display: flex; gap: 8px; align-items: center;">
-                                        <input type="text" v-model="line.text" class="form-input" style="flex-grow: 1; padding: 6px 12px; font-size: 0.85rem;" placeholder="Pemeriksaan kepatuhan personalia..." />
+                                        <input type="text" v-model="line.text" class="form-input" style="flex-grow: 1; padding: 6px 12px; font-size: 0.85rem;" placeholder="Masukkan disini..." />
                                         <button type="button" @click="removeLine(manLines, idx)" class="btn btn-danger" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; flex-shrink: 0;" title="Hapus">
                                             🗑️
                                         </button>
@@ -221,7 +221,7 @@ const submitForm = () => {
                                 </div>
                                 <div style="display: flex; flex-direction: column; gap: 8px;">
                                     <div v-for="(line, idx) in methodLines" :key="idx" style="display: flex; gap: 8px; align-items: center;">
-                                        <input type="text" v-model="line.text" class="form-input" style="flex-grow: 1; padding: 6px 12px; font-size: 0.85rem;" placeholder="Evaluasi prosedur kerja standard..." />
+                                        <input type="text" v-model="line.text" class="form-input" style="flex-grow: 1; padding: 6px 12px; font-size: 0.85rem;" placeholder="Masukkan disini..." />
                                         <button type="button" @click="removeLine(methodLines, idx)" class="btn btn-danger" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; flex-shrink: 0;" title="Hapus">
                                             🗑️
                                         </button>
@@ -237,7 +237,7 @@ const submitForm = () => {
                                 </div>
                                 <div style="display: flex; flex-direction: column; gap: 8px;">
                                     <div v-for="(line, idx) in milieuLines" :key="idx" style="display: flex; gap: 8px; align-items: center;">
-                                        <input type="text" v-model="line.text" class="form-input" style="flex-grow: 1; padding: 6px 12px; font-size: 0.85rem;" placeholder="Pemantauan kondisi lingkungan..." />
+                                        <input type="text" v-model="line.text" class="form-input" style="flex-grow: 1; padding: 6px 12px; font-size: 0.85rem;" placeholder="Masukkan disini..." />
                                         <button type="button" @click="removeLine(milieuLines, idx)" class="btn btn-danger" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; flex-shrink: 0;" title="Hapus">
                                             🗑️
                                         </button>
@@ -256,7 +256,7 @@ const submitForm = () => {
                                 </div>
                                 <div style="display: flex; flex-direction: column; gap: 8px;">
                                     <div v-for="(line, idx) in measurementLines" :key="idx" style="display: flex; gap: 8px; align-items: center;">
-                                        <input type="text" v-model="line.text" class="form-input" style="flex-grow: 1; padding: 6px 12px; font-size: 0.85rem;" placeholder="Verifikasi alat ukur/kalibrasi..." />
+                                        <input type="text" v-model="line.text" class="form-input" style="flex-grow: 1; padding: 6px 12px; font-size: 0.85rem;" placeholder="Masukkan disini..." />
                                         <button type="button" @click="removeLine(measurementLines, idx)" class="btn btn-danger" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; flex-shrink: 0;" title="Hapus">
                                             🗑️
                                         </button>
@@ -272,7 +272,7 @@ const submitForm = () => {
                                 </div>
                                 <div style="display: flex; flex-direction: column; gap: 8px;">
                                     <div v-for="(line, idx) in materialsLines" :key="idx" style="display: flex; gap: 8px; align-items: center;">
-                                        <input type="text" v-model="line.text" class="form-input" style="flex-grow: 1; padding: 6px 12px; font-size: 0.85rem;" placeholder="Analisis bahan awal/bets..." />
+                                        <input type="text" v-model="line.text" class="form-input" style="flex-grow: 1; padding: 6px 12px; font-size: 0.85rem;" placeholder="Masukkan disini..." />
                                         <button type="button" @click="removeLine(materialsLines, idx)" class="btn btn-danger" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; flex-shrink: 0;" title="Hapus">
                                             🗑️
                                         </button>
@@ -299,7 +299,7 @@ const submitForm = () => {
                             </div>
                             <div style="display: flex; flex-direction: column; gap: 8px;">
                                 <div v-for="(line, idx) in rootCauseLines" :key="idx" style="display: flex; gap: 8px; align-items: center;">
-                                    <input type="text" v-model="line.text" class="form-input" style="flex-grow: 1; padding: 6px 12px; font-size: 0.85rem;" placeholder="Baris kesimpulan akar masalah..." />
+                                    <input type="text" v-model="line.text" class="form-input" style="flex-grow: 1; padding: 6px 12px; font-size: 0.85rem;" placeholder="Masukkan disini..." />
                                     <button type="button" @click="removeLine(rootCauseLines, idx)" class="btn btn-danger" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; flex-shrink: 0;" title="Hapus">
                                         🗑️
                                     </button>
@@ -316,7 +316,7 @@ const submitForm = () => {
                             </div>
                             <div style="display: flex; flex-direction: column; gap: 8px;">
                                 <div v-for="(line, idx) in riskIdLines" :key="idx" style="display: flex; gap: 8px; align-items: center;">
-                                    <input type="text" v-model="line.text" class="form-input" style="flex-grow: 1; padding: 6px 12px; font-size: 0.85rem;" placeholder="Poin identifikasi risiko..." />
+                                    <input type="text" v-model="line.text" class="form-input" style="flex-grow: 1; padding: 6px 12px; font-size: 0.85rem;" placeholder="Masukkan disini..." />
                                     <button type="button" @click="removeLine(riskIdLines, idx)" class="btn btn-danger" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; flex-shrink: 0;" title="Hapus">
                                         🗑️
                                     </button>
@@ -333,7 +333,7 @@ const submitForm = () => {
                             </div>
                             <div style="display: flex; flex-direction: column; gap: 8px;">
                                 <div v-for="(line, idx) in riskAnalysisLines" :key="idx" style="display: flex; gap: 8px; align-items: center;">
-                                    <input type="text" v-model="line.text" class="form-input" style="flex-grow: 1; padding: 6px 12px; font-size: 0.85rem;" placeholder="Pengantar kajian FMEA..." />
+                                    <input type="text" v-model="line.text" class="form-input" style="flex-grow: 1; padding: 6px 12px; font-size: 0.85rem;" placeholder="Masukkan disini..." />
                                     <button type="button" @click="removeLine(riskAnalysisLines, idx)" class="btn btn-danger" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; flex-shrink: 0;" title="Hapus">
                                         🗑️
                                     </button>
@@ -380,12 +380,12 @@ const submitForm = () => {
 
                         <div class="grid-2" style="gap:12px;margin-bottom:12px;">
                             <div class="form-group" style="margin-bottom:0;">
-                                <label class="form-label">Risk Identification</label>
-                                <input type="text" v-model="row.risk_identification" class="form-input" placeholder="Identifikasi potensi risiko..." />
+                                <label class="form-label">Failure Mode</label>
+                                <input type="text" v-model="row.risk_identification" class="form-input" placeholder="Mode kegagalan (Failure Mode)..." />
                             </div>
                             <div class="form-group" style="margin-bottom:0;">
-                                <label class="form-label">Potensiasi Cause (Akar Masalah)</label>
-                                <input type="text" v-model="row.potensiasi_cause" class="form-input" placeholder="Penyebab potensial risiko..." />
+                                <label class="form-label">Failure Effect</label>
+                                <input type="text" v-model="row.potensiasi_cause" class="form-input" placeholder="Efek kegagalan (Failure Effect)..." />
                             </div>
                         </div>
 

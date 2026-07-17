@@ -225,6 +225,42 @@ const submitForm = (submitType) => {
     <AuthenticatedLayout>
         <template #header>✍️ Edit &amp; Revisi Laporan Deviasi</template>
 
+        <!-- SOD Guide Modal -->
+        <Teleport to="body">
+            <Transition name="fade">
+                <div v-if="showSodGuide" @click.self="showSodGuide = false"
+                    style="position:fixed;inset:0;background:rgba(15,23,42,0.75);display:flex;align-items:center;justify-content:center;z-index:10000;backdrop-filter:blur(8px);">
+                    <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:16px;width:92%;max-width:800px;max-height:88vh;overflow:auto;padding:28px;box-shadow:var(--hover-shadow);">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                            <h3 style="font-size:1.15rem;font-weight:800;color:var(--text-primary);margin:0;">📊 Panduan Penilaian SOD</h3>
+                            <button type="button" @click="showSodGuide = false" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text-muted);">&times;</button>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:20px;">
+                            <div v-for="(rows, key) in sodGuide" :key="key">
+                                <h4 style="font-weight:700;color:var(--accent-color);margin-bottom:10px;">
+                                    {{ key === 'severity' ? '5.4.1 Severity (Keparahan)' : key === 'occurrence' ? '5.4.2 Occurrence (Kejadian)' : '5.4.3 Detection (Deteksi)' }}
+                                </h4>
+                                <table class="qms-table" style="width:100%;">
+                                    <thead><tr><th style="width:90px;">Tingkat</th><th style="width:80px;">Nilai</th><th>Kondisi</th></tr></thead>
+                                    <tbody>
+                                        <tr v-for="row in rows" :key="row.level">
+                                            <td style="font-weight:600;">{{ row.level }}</td>
+                                            <td><span class="status-badge" :class="row.nilai.startsWith('7') ? 'badge-reject' : row.nilai.startsWith('4') ? 'badge-in_review' : 'badge-approved'">{{ row.nilai }}</span></td>
+                                            <td style="font-size:0.85rem;line-height:1.5;">{{ row.kondisi }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div style="margin-top:20px;padding:12px 16px;background:var(--bg-primary);border-radius:8px;border:1px solid var(--border-color);font-size:0.85rem;color:var(--text-muted);">
+                            <strong>RPN = Severity × Occurrence × Detection</strong><br>
+                            ≤ 3: Minor (hijau) &nbsp;|&nbsp; 4–80: Mayor (kuning) &nbsp;|&nbsp; &gt;80: Kritikal (merah)
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
+
         <div style="max-width: 960px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px;">
             <div class="flex-between">
                 <Link :href="route('deviations.show', deviation.id)" class="btn btn-secondary">
@@ -507,14 +543,14 @@ const submitForm = (submitType) => {
 
                         <div class="grid-2" style="gap:12px;margin-bottom:12px;">
                             <div class="form-group" style="margin-bottom:0;">
-                                <label class="form-label">Risk Identification</label>
+                                <label class="form-label">Failure Mode</label>
                                 <input type="text" v-model="row.risk_identification" class="form-input"
-                                    placeholder="Identifikasi potensi risiko..." />
+                                    placeholder="Mode kegagalan (Failure Mode)..." />
                             </div>
                             <div class="form-group" style="margin-bottom:0;">
-                                <label class="form-label">Potensiasi Cause (Akar Masalah)</label>
+                                <label class="form-label">Failure Effect</label>
                                 <input type="text" v-model="row.potensiasi_cause" class="form-input"
-                                    placeholder="Penyebab potensial risiko..." />
+                                    placeholder="Efek kegagalan (Failure Effect)..." />
                             </div>
                         </div>
 

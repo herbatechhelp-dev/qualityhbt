@@ -632,13 +632,16 @@
                             @foreach($risks as $index => $risk)
                                 <tr>
                                     <td style="text-align: center;">{{ $index + 1 }}</td>
-                                    <td>{{ $risk['risk_identification'] ?? 'Risk' }}</td>
-                                    <td>{{ $risk['potensiasi_cause'] ?? 'Cause' }}</td>
+                                    <td>{{ $risk['risk_identification'] ?? 'Failure Mode' }}</td>
+                                    <td>{{ $risk['potensiasi_cause'] ?? 'Failure Effect' }}</td>
                                     <td style="text-align: center;">{{ $risk['s'] ?? '1' }}</td>
                                     <td style="text-align: center;">{{ $risk['o'] ?? '1' }}</td>
                                     <td style="text-align: center;">{{ $risk['d'] ?? '1' }}</td>
                                     <td style="text-align: center; font-weight: bold;">{{ $risk['rpn'] ?? '1' }}</td>
-                                    <td>{{ $risk['risk_control'] ?? 'Control' }}</td>
+                                    <td>
+                                        <div><strong>CA:</strong> {{ $risk['risk_control'] ?? '-' }}</div>
+                                        <div style="margin-top: 4px;"><strong>PA:</strong> {{ $risk['action'] ?? '-' }}</div>
+                                    </td>
                                     <td style="text-align: center;">{{ $risk['s_after'] ?? '1' }}</td>
                                     <td style="text-align: center;">{{ $risk['o_after'] ?? '1' }}</td>
                                     <td style="text-align: center;">{{ $risk['d_after'] ?? '1' }}</td>

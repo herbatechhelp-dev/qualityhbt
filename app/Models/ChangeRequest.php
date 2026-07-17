@@ -13,6 +13,7 @@ class ChangeRequest extends Model
         'cr_number',
         'department',
         'type',
+        'nama_produk',
         'sifat_perubahan',
         'risk_identification',
         'potential_cause',

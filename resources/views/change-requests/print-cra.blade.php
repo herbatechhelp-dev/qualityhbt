@@ -291,7 +291,7 @@
             <tr>
                 <td colspan="2">
                     <span class="label-bold">NAMA PRODUK / PROSES / PEMERIKSAAN / SISTEM / ALAT :</span><br>
-                    <span>{{ $qa2['nama_produk'] ?? '-' }}</span>
+                    <span>{{ $changeRequest->nama_produk ?? ($qa2['nama_produk'] ?? '-') }}</span>
                 </td>
             </tr>
             <tr>
@@ -689,7 +689,7 @@
             <tr>
                 <td>
                     <span class="label-bold">NAMA PRODUK/ PROSES/ PEMERIKSAAN/ SISTEM/ ALAT :</span><br>
-                    <span>{{ $qa2['nama_produk'] ?? '-' }}</span>
+                    <span>{{ $changeRequest->nama_produk ?? ($qa2['nama_produk'] ?? '-') }}</span>
                 </td>
             </tr>
         </table>

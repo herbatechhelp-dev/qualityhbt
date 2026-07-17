@@ -18,6 +18,7 @@ class QmsBusinessRulesTest extends TestCase
 
         $response = $this->actingAs($user)->post(route('change-requests.store'), [
             'type' => 'CRA',
+            'nama_produk' => 'Formula Protap XYZ',
             'sifat_perubahan' => 'Formula',
             'department' => 'Produksi',
             'awal_sebelum_perubahan' => 'Kondisi awal sebelum dirubah',
@@ -33,6 +34,7 @@ class QmsBusinessRulesTest extends TestCase
         $response->assertRedirect(route('change-requests.index'));
         $this->assertDatabaseHas('change_requests', [
             'type' => 'CRA',
+            'nama_produk' => 'Formula Protap XYZ',
             'sifat_perubahan' => 'Formula',
             'awal_sebelum_perubahan' => 'Kondisi awal sebelum dirubah',
             'usulan_perubahan' => 'Rencana usulan perubahan baru',
@@ -52,6 +54,7 @@ class QmsBusinessRulesTest extends TestCase
 
         $response = $this->actingAs($user)->post(route('change-requests.store'), [
             'type' => 'CRB',
+            'nama_produk' => 'Sop Kepegawaian',
             'department' => 'HRD',
             'awal_sebelum_perubahan' => 'Kondisi awal sebelum dirubah',
             'usulan_perubahan' => 'Rencana usulan perubahan baru',
@@ -63,6 +66,7 @@ class QmsBusinessRulesTest extends TestCase
         $response->assertRedirect(route('change-requests.index'));
         $this->assertDatabaseHas('change_requests', [
             'type' => 'CRB',
+            'nama_produk' => 'Sop Kepegawaian',
             'rpn' => null,
             'sifat_perubahan' => null,
             'awal_sebelum_perubahan' => 'Kondisi awal sebelum dirubah',
@@ -630,6 +634,7 @@ class QmsBusinessRulesTest extends TestCase
         $cr = \App\Models\ChangeRequest::create([
             'cr_number' => 'CR/2026/0001',
             'type' => 'CRB',
+            'nama_produk' => 'SOP Lama',
             'department' => 'QA',
             'status' => 'REJECT',
             'initiator_id' => $initiator->id,
@@ -642,6 +647,7 @@ class QmsBusinessRulesTest extends TestCase
         // Resubmit the rejected CR
         $response = $this->actingAs($initiator)->post(route('change-requests.update', $cr->id), [
             'type' => 'CRB',
+            'nama_produk' => 'SOP Baru',
             'department' => 'QC',
             'awal_sebelum_perubahan' => 'Kondisi awal diubah',
             'usulan_perubahan' => 'Rencana usulan perubahan diubah',
@@ -653,6 +659,8 @@ class QmsBusinessRulesTest extends TestCase
         $response->assertRedirect(route('change-requests.index'));
         $this->assertDatabaseHas('change_requests', [
             'id' => $cr->id,
+            'type' => 'CRB',
+            'nama_produk' => 'SOP Baru',
             'sifat_perubahan' => null,
             'department' => 'QC',
             'awal_sebelum_perubahan' => 'Kondisi awal diubah',
@@ -670,6 +678,7 @@ class QmsBusinessRulesTest extends TestCase
         $deviation = Deviation::create([
             'deviation_number' => 'DEV/2026/0001',
             'department' => 'QC',
+            'pic' => 'Alat Penunjang A',
             'description' => 'First description',
             'status' => 'REJECTED',
             'reject_reason' => 'Need detail',
@@ -681,6 +690,7 @@ class QmsBusinessRulesTest extends TestCase
         // Resubmit the rejected deviation
         $response = $this->actingAs($initiator)->post(route('deviations.update', $deviation->id), [
             'department' => 'QA',
+            'pic' => 'Alat Penunjang B',
             'description' => 'Revised description with detail',
             'is_other_batch_affected' => false,
             'is_production_stopped' => false,
@@ -691,6 +701,7 @@ class QmsBusinessRulesTest extends TestCase
         $this->assertDatabaseHas('deviations', [
             'id' => $deviation->id,
             'department' => 'QA',
+            'pic' => 'Alat Penunjang B',
             'description' => 'Revised description with detail',
             'status' => 'OPEN', // Resubmitted!
             'reject_reason' => null, // Cleared!

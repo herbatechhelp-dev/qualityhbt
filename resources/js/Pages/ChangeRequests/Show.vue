@@ -91,6 +91,7 @@ const initialSifatPerubahanCustom = initialSifatPerubahan === 'Lain - lain'
 // Draft edits form (only if status === 'DRAFT' or 'REJECT')
 const editForm = useForm({
     type: props.changeRequest.type,
+    nama_produk: props.changeRequest.nama_produk || '',
     sifat_perubahan: initialSifatPerubahan,
     sifat_perubahan_custom: initialSifatPerubahanCustom,
     department: props.changeRequest.department,
@@ -122,7 +123,7 @@ const defaultVerificationData = {
     },
     qa_2: {
         no_registrasi: 'REG/' + props.changeRequest.cr_number,
-        nama_produk: '',
+        nama_produk: props.changeRequest.nama_produk || '',
         pom_status: 'option1', // default to first option
         pom_pemberitahuan_dari: '',
         pom_pemberitahuan_sampai: '',
@@ -430,7 +431,11 @@ const getStatusClass = (status) => {
                 <h3 style="font-size: 1.2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 24px;">
                     {{ changeRequest.status === 'REJECT' ? 'Revisi Pengajuan Change Request' : 'Edit Draf Change Request' }}
                 </h3>
-                <div class="grid-2" style="margin-bottom: 20px;">
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label class="form-label">Nama Produk / Proses / Pemeriksaan / Sistem / Alat <span style="color:#ef4444;">*</span></label>
+                    <input type="text" v-model="editForm.nama_produk" class="form-input" placeholder="Nama produk, proses, pemeriksaan, sistem, atau alat..." required />
+                 </div>
+                 <div class="grid-2" style="margin-bottom: 20px;">
                     <div v-if="editForm.type === 'CRA'" class="form-group">
                         <label class="form-label">Jenis Perubahan</label>
                         <div style="display: flex; gap: 8px; flex-direction: column;">
@@ -581,6 +586,10 @@ const getStatusClass = (status) => {
                             <div v-if="changeRequest.type === 'CRA'">
                                 <span style="font-size: 0.775rem; color: var(--text-muted); display: block; text-transform: uppercase;">Jenis Perubahan</span>
                                 <span style="font-weight: 600; color: var(--text-primary);">{{ changeRequest.sifat_perubahan }}</span>
+                            </div>
+                            <div style="grid-column: span 2; margin-top: 10px;">
+                                <span style="font-size: 0.775rem; color: var(--text-muted); display: block; text-transform: uppercase;">Nama Produk / Proses / Pemeriksaan / Sistem / Alat</span>
+                                <span style="font-weight: 600; color: var(--text-primary);">{{ changeRequest.nama_produk || '-' }}</span>
                             </div>
                         </div>
 

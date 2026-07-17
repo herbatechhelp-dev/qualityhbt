@@ -4,6 +4,7 @@ import { Head, useForm, Link } from '@inertiajs/vue3';
 
 const form = useForm({
     type: 'CRA', // Default CRA
+    nama_produk: '',
     sifat_perubahan: 'Formula',
     sifat_perubahan_custom: '',
     department: '',
@@ -68,6 +69,17 @@ const submitForm = (submitType) => {
                 <h3 style="font-size: 1.2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 24px; color: var(--text-primary);">
                     Form Identifikasi & Detail Perubahan ({{ form.type }})
                 </h3>
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label for="nama_produk" class="form-label">
+                        Nama Produk / Proses / Pemeriksaan / Sistem / Alat <span style="color:#ef4444;">*</span>
+                    </label>
+                    <input id="nama_produk" type="text" v-model="form.nama_produk" class="form-input" placeholder="Nama produk, proses, pemeriksaan, sistem, atau alat..." required />
+                    <div v-if="form.errors.nama_produk" style="color: #ef4444; font-size: 0.8rem; margin-top: 4px;">
+                        {{ form.errors.nama_produk }}
+                    </div>
+                </div>
+
                 <div class="grid-2" style="margin-bottom: 20px;">
                     <div v-if="form.type === 'CRA'" class="form-group" style="margin-bottom: 0;">
                         <label for="sifat_perubahan" class="form-label">Jenis Perubahan</label>

@@ -229,7 +229,7 @@ const submitForm = (submitType) => {
 
                             <div style="margin-top:20px;padding:12px 16px;background:var(--bg-primary);border-radius:8px;border:1px solid var(--border-color);font-size:0.85rem;color:var(--text-muted);">
                                 <strong>RPN = Severity × Occurrence × Detection</strong><br>
-                                RPN ≤ 50: Rendah (hijau) &nbsp;|&nbsp; 51–200: Sedang (kuning) &nbsp;|&nbsp; &gt;200: Tinggi (merah)
+                                RPN ≤ 3: Minor (hijau) &nbsp;|&nbsp; 4–80: Mayor (kuning) &nbsp;|&nbsp; &gt;80: Kritikal (merah)
                             </div>
                         </div>
                     </div>
@@ -493,14 +493,14 @@ const submitForm = (submitType) => {
 
                         <div class="grid-2" style="gap:12px;margin-bottom:12px;">
                             <div class="form-group" style="margin-bottom:0;">
-                                <label class="form-label">Risk Identification</label>
+                                <label class="form-label">Failure Mode</label>
                                 <input type="text" v-model="row.risk_identification" class="form-input"
-                                    placeholder="Identifikasi potensi risiko..." />
+                                    placeholder="Mode kegagalan (Failure Mode)..." />
                             </div>
                             <div class="form-group" style="margin-bottom:0;">
-                                <label class="form-label">Potensiasi Cause (Akar Masalah)</label>
+                                <label class="form-label">Failure Effect</label>
                                 <input type="text" v-model="row.potensiasi_cause" class="form-input"
-                                    placeholder="Penyebab potensial risiko..." />
+                                    placeholder="Efek kegagalan (Failure Effect)..." />
                             </div>
                         </div>
 

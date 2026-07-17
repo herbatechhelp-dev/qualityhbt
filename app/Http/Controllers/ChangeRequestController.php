@@ -98,6 +98,7 @@ class ChangeRequestController extends Controller
     {
         $rules = [
             'type' => 'required|in:CRA,CRB',
+            'nama_produk' => 'required|string|max:255',
             'department' => 'required|string|max:255',
             'awal_sebelum_perubahan' => 'required|string',
             'usulan_perubahan' => 'required|string',
@@ -160,6 +161,7 @@ class ChangeRequestController extends Controller
         $cr = ChangeRequest::create([
             'cr_number' => $crNumber,
             'type' => $request->type,
+            'nama_produk' => $request->nama_produk,
             'sifat_perubahan' => $sifatPerubahan,
             'department' => $request->department,
             'severity' => $severity,
@@ -212,6 +214,7 @@ class ChangeRequestController extends Controller
         if (in_array($changeRequest->status, ['DRAFT', 'REJECT']) && $changeRequest->initiator_id === $request->user()->id) {
             $rules = [
                 'type' => 'required|in:CRA,CRB',
+                'nama_produk' => 'required|string|max:255',
                 'department' => 'required|string|max:255',
                 'awal_sebelum_perubahan' => 'required|string',
                 'usulan_perubahan' => 'required|string',
@@ -269,6 +272,7 @@ class ChangeRequestController extends Controller
 
             $changeRequest->update([
                 'type' => $request->type,
+                'nama_produk' => $request->nama_produk,
                 'sifat_perubahan' => $sifatPerubahan,
                 'department' => $request->department,
                 'severity' => $severity,

@@ -131,7 +131,7 @@
             box-sizing: border-box;
         }
         .sig-space {
-            height: 50px;
+            height: 70px;
             margin: 4px 0;
             text-align: center;
             vertical-align: middle;
@@ -344,7 +344,7 @@
                     <div style="margin-top: 4px;">Nama : <u>{{ $deviation->initiator->name ?? 'Initiator' }}</u></div>
                     <div class="sig-space">
                         @if($deviation->initiator && $deviation->initiator->signature_path)
-                            <img src="{{ asset('storage/' . $deviation->initiator->signature_path) }}" style="max-height: 40px; max-width: 150px; object-fit: contain;" />
+                            <img src="{{ asset('storage/' . $deviation->initiator->signature_path) }}" style="max-height: 70px; height: 70px; max-width: 170px; object-fit: contain; display: block; margin: 0 auto;" />
                         @else
                             <div style="margin-top: 15px; border: 1px dashed #3b82f6; padding: 4px; background-color: #eff6ff; display: inline-block; border-radius: 4px; font-size: 7px; line-height: 1;">
                                 <span style="color: #2563eb; font-weight: bold; display: block; margin-bottom: 2px;">✓ DIAJUKAN ELEKTRONIK</span>
@@ -361,7 +361,7 @@
                     <div class="sig-space">
                         @if($deviation->status === 'APPROVED')
                             @if($huUser && $huUser->signature_path)
-                                <img src="{{ asset('storage/' . $huUser->signature_path) }}" style="max-height: 40px; max-width: 150px; object-fit: contain;" />
+                                <img src="{{ asset('storage/' . $huUser->signature_path) }}" style="max-height: 70px; height: 70px; max-width: 170px; object-fit: contain; display: block; margin: 0 auto;" />
                             @else
                                 <div style="margin-top: 15px; border: 1px dashed #22c55e; padding: 4px; background-color: #f0fdf4; display: inline-block; border-radius: 4px; font-size: 7px; line-height: 1;">
                                     <span style="color: #16a34a; font-weight: bold; display: block; margin-bottom: 2px;">✓ DISETUJUI ELEKTRONIK</span>
@@ -530,7 +530,7 @@
                     <div class="sig-space">
                         @if($deviation->status === 'APPROVED')
                             @if($omUser && $omUser->signature_path)
-                                <img src="{{ asset('storage/' . $omUser->signature_path) }}" style="max-height: 40px; max-width: 150px; object-fit: contain;" />
+                                <img src="{{ asset('storage/' . $omUser->signature_path) }}" style="max-height: 70px; height: 70px; max-width: 170px; object-fit: contain; display: block; margin: 0 auto;" />
                             @else
                                 <div style="margin-top: 15px; border: 1px dashed #22c55e; padding: 4px; background-color: #f0fdf4; display: inline-block; border-radius: 4px; font-size: 7px; line-height: 1;">
                                     <span style="color: #16a34a; font-weight: bold; display: block; margin-bottom: 2px;">✓ DISETUJUI ELEKTRONIK</span>
@@ -550,7 +550,7 @@
                     <div class="sig-space">
                         @if($deviation->status === 'APPROVED')
                             @if($gmUser && $gmUser->signature_path)
-                                <img src="{{ asset('storage/' . $gmUser->signature_path) }}" style="max-height: 40px; max-width: 150px; object-fit: contain;" />
+                                <img src="{{ asset('storage/' . $gmUser->signature_path) }}" style="max-height: 70px; height: 70px; max-width: 170px; object-fit: contain; display: block; margin: 0 auto;" />
                             @else
                                 <div style="margin-top: 15px; border: 1px dashed #22c55e; padding: 4px; background-color: #f0fdf4; display: inline-block; border-radius: 4px; font-size: 7px; line-height: 1;">
                                     <span style="color: #16a34a; font-weight: bold; display: block; margin-bottom: 2px;">✓ DISETUJUI ELEKTRONIK</span>

@@ -432,7 +432,7 @@
                         @if(($qa1['hu_approved'] ?? '') === 'APPROVED')
                             @if($huUser && $huUser->signature_path)
                                 <div style="text-align: center; margin-top: 2px;">
-                                    <img src="{{ asset('storage/' . $huUser->signature_path) }}" style="max-height: 55px; max-width: 160px; object-fit: contain; display: block; margin: 0 auto;" />
+                                    <img src="{{ asset('storage/' . $huUser->signature_path) }}" style="max-height: 70px; height: 70px; max-width: 170px; object-fit: contain; display: block; margin: 0 auto;" />
                                 </div>
                             @else
                                 <div style="text-align: center; border: 1px dashed #22c55e; padding: 4px; border-radius: 4px; background-color: #f0fdf4; font-size: 8px; min-width: 150px;">
@@ -659,7 +659,7 @@
                     @if(($qa1['hu_approved'] ?? '') === 'APPROVED')
                         @if($huUser && $huUser->signature_path)
                             <div style="text-align: center; margin-top: 5px;">
-                                <img src="{{ asset('storage/' . $huUser->signature_path) }}" style="max-height: 45px; max-width: 150px; object-fit: contain; display: block; margin: 0 auto 4px;" /><br>
+                                <img src="{{ asset('storage/' . $huUser->signature_path) }}" style="max-height: 70px; height: 70px; max-width: 170px; object-fit: contain; display: block; margin: 0 auto 4px;" /><br>
                                 <span style="font-weight: bold; text-decoration: underline; font-size: 10px;">{{ $huUser->name }}</span>
                             </div>
                         @else

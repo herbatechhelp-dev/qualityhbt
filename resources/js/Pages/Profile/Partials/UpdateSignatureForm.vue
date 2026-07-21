@@ -13,8 +13,105 @@ const form = useForm({
     signature: null,
 });
 
+const rawImage = ref(null);
+const rawFileName = ref('signature.png');
+const previewUrl = ref(null);
+const scaleRatio = ref(100); // 50% to 150%
+const autoTrim = ref(true);
+
 const handleFileChange = (e) => {
-    form.signature = e.target.files[0];
+    const file = e.target.files[0];
+    if (!file) return;
+    rawFileName.value = file.name;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+        const img = new Image();
+        img.onload = () => {
+            rawImage.value = img;
+            processSignature();
+        };
+        img.src = evt.target.result;
+    };
+    reader.readAsDataURL(file);
+};
+
+const processSignature = () => {
+    if (!rawImage.value) return;
+    const img = rawImage.value;
+    
+    let sourceCanvas = document.createElement('canvas');
+    sourceCanvas.width = img.width;
+    sourceCanvas.height = img.height;
+    let ctx = sourceCanvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+
+    let finalCanvas = sourceCanvas;
+
+    if (autoTrim.value) {
+        const imgData = ctx.getImageData(0, 0, sourceCanvas.width, sourceCanvas.height);
+        const data = imgData.data;
+
+        let minX = sourceCanvas.width, minY = sourceCanvas.height, maxX = 0, maxY = 0;
+        let found = false;
+
+        for (let y = 0; y < sourceCanvas.height; y++) {
+            for (let x = 0; x < sourceCanvas.width; x++) {
+                const idx = (y * sourceCanvas.width + x) * 4;
+                const r = data[idx];
+                const g = data[idx + 1];
+                const b = data[idx + 2];
+                const a = data[idx + 3];
+
+                // Detect signature strokes (non-white and non-transparent)
+                if (a > 20 && (r < 240 || g < 240 || b < 240)) {
+                    if (x < minX) minX = x;
+                    if (x > maxX) maxX = x;
+                    if (y < minY) minY = y;
+                    if (y > maxY) maxY = y;
+                    found = true;
+                }
+            }
+        }
+
+        if (found) {
+            const pad = 8;
+            minX = Math.max(0, minX - pad);
+            minY = Math.max(0, minY - pad);
+            maxX = Math.min(sourceCanvas.width, maxX + pad);
+            maxY = Math.min(sourceCanvas.height, maxY + pad);
+
+            const cropW = maxX - minX;
+            const cropH = maxY - minY;
+
+            const trimmed = document.createElement('canvas');
+            trimmed.width = cropW;
+            trimmed.height = cropH;
+            const trimmedCtx = trimmed.getContext('2d');
+            trimmedCtx.drawImage(sourceCanvas, minX, minY, cropW, cropH, 0, 0, cropW, cropH);
+            finalCanvas = trimmed;
+        }
+    }
+
+    // Apply scaling
+    const scale = scaleRatio.value / 100;
+    const scaledW = Math.round(finalCanvas.width * scale);
+    const scaledH = Math.round(finalCanvas.height * scale);
+
+    const scaledCanvas = document.createElement('canvas');
+    scaledCanvas.width = scaledW;
+    scaledCanvas.height = scaledH;
+    const scaledCtx = scaledCanvas.getContext('2d');
+    scaledCtx.drawImage(finalCanvas, 0, 0, scaledW, scaledH);
+
+    scaledCanvas.toBlob((blob) => {
+        if (!blob) return;
+        const processedFile = new File([blob], rawFileName.value, { type: 'image/png' });
+        form.signature = processedFile;
+        if (previewUrl.value) {
+            URL.revokeObjectURL(previewUrl.value);
+        }
+        previewUrl.value = URL.createObjectURL(blob);
+    }, 'image/png');
 };
 
 const submitSignature = () => {
@@ -22,6 +119,8 @@ const submitSignature = () => {
         forceFormData: true,
         onSuccess: () => {
             form.reset();
+            rawImage.value = null;
+            previewUrl.value = null;
             if (signatureInput.value) {
                 signatureInput.value.value = '';
             }
@@ -37,7 +136,6 @@ const deleteSignature = () => {
 </script>
 
 <script>
-// Separate block for script setup or standard script tags
 export default {
     name: 'UpdateSignatureForm'
 }
@@ -95,6 +193,49 @@ export default {
                     required
                 />
                 <InputError class="mt-2" :message="form.errors.signature" />
+            </div>
+
+            <!-- Signature Cropper & Scaling Settings -->
+            <div v-if="rawImage" class="p-4 border border-blue-200 bg-blue-50 dark:bg-gray-800 dark:border-gray-700 rounded-lg space-y-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">Pengaturan Tanda Tangan</span>
+                    <label class="inline-flex items-center cursor-pointer text-xs text-gray-700 dark:text-gray-300">
+                        <input type="checkbox" v-model="autoTrim" @change="processSignature" class="sr-only peer">
+                        <div class="relative w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                        <span class="ms-2">Auto-Crop Margin Kosong</span>
+                    </label>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-center text-xs mb-1 text-gray-700 dark:text-gray-300">
+                        <span>Skala / Ukuran Tanda Tangan:</span>
+                        <span class="font-bold text-blue-600 dark:text-blue-400">{{ scaleRatio }}%</span>
+                    </div>
+                    <input 
+                        type="range" 
+                        min="50" 
+                        max="180" 
+                        step="5" 
+                        v-model.number="scaleRatio" 
+                        @input="processSignature"
+                        class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700" 
+                    />
+                </div>
+
+                <!-- Box Preview Simulasi Tanda Tangan Cetak -->
+                <div>
+                    <span class="text-xs text-gray-500 dark:text-gray-400 block mb-1">Pratinjau Hasil Pada Kotak Dokumen Cetak:</span>
+                    <div style="background-color: white; border: 1px solid #000; border-radius: 4px; padding: 8px; width: 220px; min-height: 110px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center;">
+                        <span style="font-size: 10px; font-weight: bold; align-self: flex-start; color: #000;">Nama & Tanda Tangan Inisiator :</span>
+                        <img 
+                            v-if="previewUrl"
+                            :src="previewUrl" 
+                            alt="Pratinjau Hasil Crop" 
+                            style="max-height: 70px; max-width: 160px; object-fit: contain; display: block; margin: 4px auto;" 
+                        />
+                        <div style="font-size: 10px; font-weight: bold; text-decoration: underline; color: #000;">{{ user.name }}</div>
+                    </div>
+                </div>
             </div>
 
             <div class="flex items-center gap-4">

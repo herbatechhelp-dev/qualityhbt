@@ -160,7 +160,7 @@
             padding: 6px;
         }
         .sig-space {
-            height: 55px;
+            height: 70px;
         }
 
         /* Footer Layout */
@@ -271,7 +271,7 @@
                     <span class="label-bold">Nama & Tanda Tangan Inisiator :</span>
                     @if($changeRequest->initiator->signature_path)
                         <div style="text-align: center; margin-top: 4px;">
-                            <img src="{{ asset('storage/' . $changeRequest->initiator->signature_path) }}" style="max-height: 55px; max-width: 160px; object-fit: contain; display: block; margin: 0 auto 4px;" /><br>
+                            <img src="{{ asset('storage/' . $changeRequest->initiator->signature_path) }}" style="max-height: 70px; height: 70px; max-width: 170px; object-fit: contain; display: block; margin: 0 auto 4px;" /><br>
                             <span style="font-weight: bold; text-decoration: underline; font-size: 10px;">{{ $changeRequest->initiator->name }}</span>
                             <div style="font-size: 8px; color: #4b5563; margin-top: 2px;">Tanggal: {{ $changeRequest->created_at->format('d/m/Y') }}</div>
                         </div>
@@ -288,7 +288,7 @@
                     @if(($qa1['hu_approved'] ?? '') === 'APPROVED')
                         @if($huUser && $huUser->signature_path)
                             <div style="text-align: center; margin-top: 4px;">
-                                <img src="{{ asset('storage/' . $huUser->signature_path) }}" style="max-height: 55px; max-width: 160px; object-fit: contain; display: block; margin: 0 auto 4px;" /><br>
+                                <img src="{{ asset('storage/' . $huUser->signature_path) }}" style="max-height: 70px; height: 70px; max-width: 170px; object-fit: contain; display: block; margin: 0 auto 4px;" /><br>
                                 <span style="font-weight: bold; text-decoration: underline; font-size: 10px;">{{ $huUser->name }}</span>
                                 <div style="font-size: 8px; color: #4b5563; margin-top: 2px;">Tanggal: {{ !empty($qa1['tanggal']) ? \Carbon\Carbon::parse($qa1['tanggal'])->format('d/m/Y') : '' }}</div>
                             </div>

@@ -28,6 +28,7 @@
             page-break-after: always;
             position: relative;
             min-height: 265mm;
+            padding-bottom: 22mm;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
@@ -40,58 +41,62 @@
         .master-copy-stamp {
             border: 3px double #3b82f6;
             color: #3b82f6;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
             text-transform: uppercase;
-            padding: 4px 12px;
+            padding: 3px 10px;
             display: inline-block;
             transform: rotate(-3deg);
             opacity: 0.85;
             position: absolute;
-            bottom: 15px;
+            bottom: 12px;
             left: 5px;
+            z-index: 10;
         }
         .master-copy-stamp-small {
             border: 2px double #3b82f6;
             color: #3b82f6;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
             text-transform: uppercase;
-            padding: 2px 8px;
+            padding: 2px 6px;
             display: inline-block;
             transform: rotate(-3deg);
             opacity: 0.85;
             position: absolute;
-            bottom: 5px;
+            bottom: 8px;
             left: 5px;
+            z-index: 10;
         }
         .master-stamp {
             border: 3px double #ef4444;
             color: #ef4444;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
             text-transform: uppercase;
-            padding: 4px 12px;
+            padding: 3px 10px;
             display: inline-block;
             transform: rotate(2deg);
             opacity: 0.85;
             position: absolute;
-            bottom: 15px;
-            right: 120px;
+            bottom: 12px;
+            right: 110px;
+            z-index: 10;
         }
         .master-stamp-small {
             border: 2px double #ef4444;
             color: #ef4444;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
             text-transform: uppercase;
-            padding: 2px 8px;
+            padding: 2px 6px;
             display: inline-block;
             transform: rotate(2deg);
             opacity: 0.85;
             position: absolute;
-            bottom: 5px;
-            right: 120px;
+            bottom: 8px;
+            right: 110px;
+            z-index: 10;
         }
 
         /* Header Table */
@@ -179,7 +184,7 @@
         }
 
         .content-area {
-            min-height: 70px;
+            min-height: 35px;
             font-size: 11px;
             white-space: pre-wrap;
             padding-top: 4px;
@@ -189,8 +194,7 @@
         .signature-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: auto;
-            margin-bottom: 40px;
+            margin-bottom: 10px;
         }
         .signature-table td {
             border: 1px solid #000;
@@ -198,19 +202,22 @@
             padding: 6px;
         }
         .sig-space {
-            height: 50px;
+            height: 55px;
         }
 
         /* Footer Layout */
         .page-footer {
-            margin-top: auto;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
             font-size: 9px;
             border-top: 1px solid #000;
             padding-top: 4px;
-            position: relative;
+            padding-bottom: 2px;
         }
         .doc-code {
             font-weight: bold;
@@ -397,13 +404,13 @@
                 <td>
                     <span class="label-bold">Usulan Dibuat Oleh :</span>
                     @if($changeRequest->initiator->signature_path)
-                        <div style="text-align: center; margin-top: 8px;">
-                            <img src="{{ asset('storage/' . $changeRequest->initiator->signature_path) }}" style="max-height: 45px; max-width: 180px; object-fit: contain; display: block; margin: 0 auto 4px;" /><br>
+                        <div style="text-align: center; margin-top: 4px;">
+                            <img src="{{ asset('storage/' . $changeRequest->initiator->signature_path) }}" style="max-height: 55px; max-width: 160px; object-fit: contain; display: block; margin: 0 auto 4px;" /><br>
                             <span style="font-weight: bold; text-decoration: underline; font-size: 10px;">{{ $changeRequest->initiator->name }}</span>
                             <div style="font-size: 8px; color: #4b5563; margin-top: 2px;">Tanggal: {{ $changeRequest->created_at->format('d/m/Y') }}</div>
                         </div>
                     @else
-                        <div style="text-align: center; border: 1px dashed #3b82f6; padding: 6px; border-radius: 4px; background-color: #eff6ff; margin-top: 8px; max-width: 200px;">
+                        <div style="text-align: center; border: 1px dashed #3b82f6; padding: 6px; border-radius: 4px; background-color: #eff6ff; margin: 4px auto 0; max-width: 220px;">
                             <span style="color: #2563eb; font-weight: bold; display: block; font-size: 8px;">✓ DIAJUKAN ELEKTRONIK</span>
                             <span style="font-family: 'Courier New', Courier, monospace; font-weight: bold; display: block; font-size: 11px; margin: 3px 0;">{{ $changeRequest->initiator->name }}</span>
                             <span style="color: #6b7280; display: block; font-size: 7px;">Tgl: {{ $changeRequest->created_at->format('d/m/Y') }}</span>
@@ -414,13 +421,13 @@
                     <span class="label-bold">Manager Terkait :</span>
                     @if(($qa1['hu_approved'] ?? '') === 'APPROVED')
                         @if($huUser && $huUser->signature_path)
-                            <div style="text-align: center; margin-top: 8px;">
-                                <img src="{{ asset('storage/' . $huUser->signature_path) }}" style="max-height: 45px; max-width: 180px; object-fit: contain; display: block; margin: 0 auto 4px;" /><br>
+                            <div style="text-align: center; margin-top: 4px;">
+                                <img src="{{ asset('storage/' . $huUser->signature_path) }}" style="max-height: 55px; max-width: 160px; object-fit: contain; display: block; margin: 0 auto 4px;" /><br>
                                 <span style="font-weight: bold; text-decoration: underline; font-size: 10px;">{{ $huUser->name }}</span>
                                 <div style="font-size: 8px; color: #4b5563; margin-top: 2px;">Tanggal: {{ !empty($qa1['tanggal']) ? \Carbon\Carbon::parse($qa1['tanggal'])->format('d/m/Y') : '' }}</div>
                             </div>
                         @else
-                            <div style="text-align: center; border: 1px dashed #22c55e; padding: 6px; border-radius: 4px; background-color: #f0fdf4; margin-top: 8px; max-width: 200px;">
+                            <div style="text-align: center; border: 1px dashed #22c55e; padding: 6px; border-radius: 4px; background-color: #f0fdf4; margin: 4px auto 0; max-width: 220px;">
                                 <span style="color: #16a34a; font-weight: bold; display: block; font-size: 8px;">✓ DISETUJUI ELEKTRONIK</span>
                                 <span style="font-family: 'Courier New', Courier, monospace; font-weight: bold; display: block; font-size: 11px; margin: 3px 0;">{{ $huUser->name ?? 'Head of Quality' }}</span>
                                 <span style="color: #6b7280; display: block; font-size: 7px;">Tgl: {{ !empty($qa1['tanggal']) ? \Carbon\Carbon::parse($qa1['tanggal'])->format('d/m/Y') : '' }}</span>
@@ -561,12 +568,12 @@
             </tr>
             
             <!-- QA Supervisor / Head of Quality -->
-            <tr style="height: 55px;">
+            <tr style="height: 50px;">
                 <td><strong>Head of Quality (HU)</strong></td>
                 <td style="text-align: center; vertical-align: middle;">
                     @if(($qa1['hu_approved'] ?? '') === 'APPROVED')
                         @if($huUser && $huUser->signature_path)
-                            <img src="{{ asset('storage/' . $huUser->signature_path) }}" style="max-height: 40px; max-width: 100px; object-fit: contain;" />
+                            <img src="{{ asset('storage/' . $huUser->signature_path) }}" style="max-height: 48px; max-width: 140px; object-fit: contain; display: block; margin: 0 auto;" />
                         @else
                             <div style="text-align: center; border: 1px dashed #22c55e; padding: 2px; border-radius: 4px; background-color: #f0fdf4; font-size: 8px; line-height: 1.1; display: inline-block; min-width: 110px;">
                                 <span style="color: #16a34a; font-weight: bold; display: block; font-size: 7px;">✓ DISETUJUI</span>
@@ -588,12 +595,12 @@
             </tr>
             
             <!-- Operational Manager -->
-            <tr style="height: 55px;">
+            <tr style="height: 50px;">
                 <td><strong>Operational Manager (OM)</strong></td>
                 <td style="text-align: center; vertical-align: middle;">
                     @if(($qa1['om_approved'] ?? '') === 'APPROVED')
                         @if($omUser && $omUser->signature_path)
-                            <img src="{{ asset('storage/' . $omUser->signature_path) }}" style="max-height: 40px; max-width: 100px; object-fit: contain;" />
+                            <img src="{{ asset('storage/' . $omUser->signature_path) }}" style="max-height: 48px; max-width: 140px; object-fit: contain; display: block; margin: 0 auto;" />
                         @else
                             <div style="text-align: center; border: 1px dashed #22c55e; padding: 2px; border-radius: 4px; background-color: #f0fdf4; font-size: 8px; line-height: 1.1; display: inline-block; min-width: 110px;">
                                 <span style="color: #16a34a; font-weight: bold; display: block; font-size: 7px;">✓ DISETUJUI</span>
@@ -615,12 +622,12 @@
             </tr>
 
             <!-- General Manager -->
-            <tr style="height: 55px;">
+            <tr style="height: 50px;">
                 <td><strong>General Manager (GM)</strong></td>
                 <td style="text-align: center; vertical-align: middle;">
                     @if(($qa1['gm_approved'] ?? '') === 'APPROVED')
                         @if($gmUser && $gmUser->signature_path)
-                            <img src="{{ asset('storage/' . $gmUser->signature_path) }}" style="max-height: 40px; max-width: 100px; object-fit: contain;" />
+                            <img src="{{ asset('storage/' . $gmUser->signature_path) }}" style="max-height: 48px; max-width: 140px; object-fit: contain; display: block; margin: 0 auto;" />
                         @else
                             <div style="text-align: center; border: 1px dashed #22c55e; padding: 2px; border-radius: 4px; background-color: #f0fdf4; font-size: 8px; line-height: 1.1; display: inline-block; min-width: 110px;">
                                 <span style="color: #16a34a; font-weight: bold; display: block; font-size: 7px;">✓ DISETUJUI</span>
@@ -998,7 +1005,7 @@
                 @if(($qa1['om_approved'] ?? '') === 'APPROVED')
                     @if($omUser && $omUser->signature_path)
                         <div style="text-align: center; margin-top: 5px;">
-                            <img src="{{ asset('storage/' . $omUser->signature_path) }}" style="max-height: 45px; max-width: 180px; object-fit: contain; display: block; margin: 0 auto 4px;" /><br>
+                            <img src="{{ asset('storage/' . $omUser->signature_path) }}" style="max-height: 55px; max-width: 160px; object-fit: contain; display: block; margin: 0 auto 4px;" /><br>
                             <span style="font-weight: bold; text-decoration: underline; font-size: 10px;">{{ $omUser->name }}</span>
                         </div>
                     @else

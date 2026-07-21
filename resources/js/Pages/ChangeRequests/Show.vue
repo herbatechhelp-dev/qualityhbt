@@ -99,9 +99,6 @@ const editForm = useForm({
     usulan_perubahan: props.changeRequest.usulan_perubahan || '',
     alasan_perubahan: props.changeRequest.alasan_perubahan || '',
     analisis_dampak: props.changeRequest.analisis_dampak || '',
-    severity: props.changeRequest.severity || 1,
-    occurrence: props.changeRequest.occurrence || 1,
-    detection: props.changeRequest.detection || 1,
     attachment: null,
     attachment_description: props.changeRequest.attachment_description || '',
     submit_type: 'submit',
@@ -464,7 +461,7 @@ const getStatusClass = (status) => {
                 <!-- Detail Perubahan Textareas (Common for CRA & CRB) -->
                 <div style="background-color: var(--bg-primary); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 24px; display: flex; flex-direction: column; gap: 16px;">
                     <h4 style="font-weight: bold; color: var(--accent-color); margin-bottom: 4px;">
-                        {{ editForm.type === 'CRA' ? '⚠️ Uraian Analisis Risiko FMEA (CRA)' : '📝 Uraian Detail Perubahan (CRB)' }}
+                        {{ editForm.type === 'CRA' ? '⚠️ Uraian Analisis Risiko (CRA)' : '📝 Uraian Detail Perubahan (CRB)' }}
                     </h4>
                     
                     <div class="form-group">
@@ -490,34 +487,6 @@ const getStatusClass = (status) => {
                             ANALISIS DAMPAK DAN PENILAIAN RESIKO <span style="font-size: 0.775rem; color: var(--text-muted); font-weight: normal; text-transform: none;">(tulis kajian risiko, dan juga benefit/manfaat dari perubahan yang terjadi termasuk analisa biaya yang timbul untuk pelaksanaan perubahan dan dampak dari perubahan, bila perlu dapat dilampirkan form risk analisis)</span>
                         </label>
                         <textarea v-model="editForm.analisis_dampak" class="form-textarea" rows="3"></textarea>
-                    </div>
-
-                    <!-- FMEA parameters (CRA Only) -->
-                    <div v-if="editForm.type === 'CRA'" style="border-top: 1px solid var(--border-color); padding-top: 12px;">
-                        <label class="form-label" style="font-weight: 600;">Penilaian Parameter Risiko FMEA (Skala 1, 3, 9)</label>
-                        <div class="grid-3" style="margin-bottom: 16px;">
-                            <div class="form-group" style="margin-bottom: 0;">
-                                <label class="form-label">Severity (Keparahan)</label>
-                                <select v-model.number="editForm.severity" class="form-select">
-                                    <option v-for="n in [1, 3, 9]" :key="n" :value="n">{{ n }}</option>
-                                </select>
-                            </div>
-                            <div class="form-group" style="margin-bottom: 0;">
-                                <label class="form-label">Occurrence (Keterjadian)</label>
-                                <select v-model.number="editForm.occurrence" class="form-select">
-                                    <option v-for="n in [1, 3, 9]" :key="n" :value="n">{{ n }}</option>
-                                </select>
-                            </div>
-                            <div class="form-group" style="margin-bottom: 0;">
-                                <label class="form-label">Detection (Deteksi)</label>
-                                <select v-model.number="editForm.detection" class="form-select">
-                                    <option v-for="n in [1, 3, 9]" :key="n" :value="n">{{ n }}</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div style="font-size: 0.9rem; font-weight: bold; color: var(--text-primary); margin-bottom: 16px;">
-                            Live Calculated RPN: {{ editForm.severity * editForm.occurrence * editForm.detection }}
-                        </div>
                     </div>
                 </div>
 

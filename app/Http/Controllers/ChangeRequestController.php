@@ -113,9 +113,6 @@ class ChangeRequestController extends Controller
             $rules = array_merge($rules, [
                 'sifat_perubahan' => 'required|string|max:255',
                 'sifat_perubahan_custom' => 'required_if:sifat_perubahan,Lain - lain|nullable|string|max:255',
-                'severity' => 'required|integer|in:1,3,9',
-                'occurrence' => 'required|integer|in:1,3,9',
-                'detection' => 'required|integer|in:1,3,9',
             ]);
         } else {
             $rules = array_merge($rules, [
@@ -126,22 +123,13 @@ class ChangeRequestController extends Controller
 
         $validated = $request->validate($rules);
 
-        // Calculate RPN, and prepare risk parameters
-        $rpn = null;
         $sifatPerubahan = null;
-        $severity = null;
-        $occurrence = null;
-        $detection = null;
 
         if ($request->type === 'CRA') {
-            $rpn = intval($request->severity) * intval($request->occurrence) * intval($request->detection);
             $sifatPerubahan = $request->sifat_perubahan;
             if ($sifatPerubahan === 'Lain - lain') {
                 $sifatPerubahan = $request->sifat_perubahan_custom;
             }
-            $severity = $request->severity;
-            $occurrence = $request->occurrence;
-            $detection = $request->detection;
         }
 
         // Generate cr_number
@@ -164,10 +152,6 @@ class ChangeRequestController extends Controller
             'nama_produk' => $request->nama_produk,
             'sifat_perubahan' => $sifatPerubahan,
             'department' => $request->department,
-            'severity' => $severity,
-            'occurrence' => $occurrence,
-            'detection' => $detection,
-            'rpn' => $rpn,
             'awal_sebelum_perubahan' => $request->awal_sebelum_perubahan,
             'usulan_perubahan' => $request->usulan_perubahan,
             'alasan_perubahan' => $request->alasan_perubahan,
@@ -229,9 +213,6 @@ class ChangeRequestController extends Controller
                 $rules = array_merge($rules, [
                     'sifat_perubahan' => 'required|string|max:255',
                     'sifat_perubahan_custom' => 'required_if:sifat_perubahan,Lain - lain|nullable|string|max:255',
-                    'severity' => 'required|integer|in:1,3,9',
-                    'occurrence' => 'required|integer|in:1,3,9',
-                    'detection' => 'required|integer|in:1,3,9',
                 ]);
             } else {
                 $rules = array_merge($rules, [
@@ -242,22 +223,13 @@ class ChangeRequestController extends Controller
 
             $validated = $request->validate($rules);
 
-            // Calculate RPN, and prepare risk parameters
-            $rpn = null;
             $sifatPerubahan = null;
-            $severity = null;
-            $occurrence = null;
-            $detection = null;
 
             if ($request->type === 'CRA') {
-                $rpn = intval($request->severity) * intval($request->occurrence) * intval($request->detection);
                 $sifatPerubahan = $request->sifat_perubahan;
                 if ($sifatPerubahan === 'Lain - lain') {
                     $sifatPerubahan = $request->sifat_perubahan_custom;
                 }
-                $severity = $request->severity;
-                $occurrence = $request->occurrence;
-                $detection = $request->detection;
             }
 
             if ($request->hasFile('attachment')) {
@@ -275,10 +247,6 @@ class ChangeRequestController extends Controller
                 'nama_produk' => $request->nama_produk,
                 'sifat_perubahan' => $sifatPerubahan,
                 'department' => $request->department,
-                'severity' => $severity,
-                'occurrence' => $occurrence,
-                'detection' => $detection,
-                'rpn' => $rpn,
                 'awal_sebelum_perubahan' => $request->awal_sebelum_perubahan,
                 'usulan_perubahan' => $request->usulan_perubahan,
                 'alasan_perubahan' => $request->alasan_perubahan,

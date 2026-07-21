@@ -12,7 +12,7 @@ class QmsBusinessRulesTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_rpn_is_calculated_automatically_for_cra()
+    public function test_cra_can_be_created_successfully()
     {
         $user = User::factory()->create(['role' => 'initiator']);
 
@@ -25,9 +25,6 @@ class QmsBusinessRulesTest extends TestCase
             'usulan_perubahan' => 'Rencana usulan perubahan baru',
             'alasan_perubahan' => 'Alasan dilakukannya perubahan',
             'analisis_dampak' => 'Analisis dampak risiko kualitas',
-            'severity' => 9,
-            'occurrence' => 3,
-            'detection' => 1,
             'submit_type' => 'submit',
         ]);
 
@@ -40,10 +37,6 @@ class QmsBusinessRulesTest extends TestCase
             'usulan_perubahan' => 'Rencana usulan perubahan baru',
             'alasan_perubahan' => 'Alasan dilakukannya perubahan',
             'analisis_dampak' => 'Analisis dampak risiko kualitas',
-            'severity' => 9,
-            'occurrence' => 3,
-            'detection' => 1,
-            'rpn' => 27, // 9 * 3 * 1
             'status' => 'OPEN',
         ]);
     }

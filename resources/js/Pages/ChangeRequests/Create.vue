@@ -12,9 +12,6 @@ const form = useForm({
     usulan_perubahan: '',
     alasan_perubahan: '',
     analisis_dampak: '',
-    severity: 1,
-    occurrence: 1,
-    detection: 1,
     attachment: null,
     attachment_description: '',
     submit_type: 'submit',
@@ -57,10 +54,10 @@ const submitForm = (submitType) => {
                 </Link>
                 <div class="btn-toggle-group">
                     <button type="button" @click="setType('CRA')" class="btn-toggle" :class="{ active: form.type === 'CRA' }">
-                        Jalur CRA (Dengan Risiko)
+                        Jalur CRA (Dengan Kajian Risiko)
                     </button>
                     <button type="button" @click="setType('CRB')" class="btn-toggle" :class="{ active: form.type === 'CRB' }">
-                        Jalur CRB (Tanpa Risiko)
+                        Jalur CRB (Tanpa Kajian Risiko)
                     </button>
                 </div>
             </div>
@@ -119,7 +116,7 @@ const submitForm = (submitType) => {
                 <!-- Detail Perubahan Textareas (Common for CRA & CRB) -->
                 <div class="fade-in" style="background-color: var(--bg-primary); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 24px; display: flex; flex-direction: column; gap: 20px;">
                     <h4 style="font-size: 1rem; color: var(--accent-color); font-weight: 700; margin-bottom: 4px;">
-                        {{ form.type === 'CRA' ? '⚠️ Uraian Analisis Risiko FMEA (CRA)' : '📝 Uraian Detail Perubahan (CRB)' }}
+                        {{ form.type === 'CRA' ? '⚠️ Uraian Analisis Risiko (CRA)' : '📝 Uraian Detail Perubahan (CRB)' }}
                     </h4>
                     
                     <div class="form-group">
@@ -161,44 +158,6 @@ const submitForm = (submitType) => {
                             {{ form.errors.analisis_dampak }}
                         </div>
                     </div>
-
-                    <!-- FMEA Parameters (CRA Only) -->
-                    <div v-if="form.type === 'CRA'" style="border-top: 1px solid var(--border-color); padding-top: 16px;">
-                        <label class="form-label" style="font-weight: 600;">Penilaian Parameter Risiko FMEA (Skala 1, 3, 9)</label>
-                        <div class="grid-3" style="margin-bottom: 12px;">
-                            <div class="form-group" style="margin-bottom: 0;">
-                                <label for="severity" class="form-label">Severity (Keparahan)</label>
-                                <select id="severity" v-model.number="form.severity" class="form-select">
-                                    <option v-for="n in [1, 3, 9]" :key="n" :value="n">{{ n }}</option>
-                                </select>
-                                <div v-if="form.errors.severity" style="color: #ef4444; font-size: 0.8rem; margin-top: 4px;">
-                                    {{ form.errors.severity }}
-                                </div>
-                            </div>
-                            <div class="form-group" style="margin-bottom: 0;">
-                                <label for="occurrence" class="form-label">Occurrence (Keterjadian)</label>
-                                <select id="occurrence" v-model.number="form.occurrence" class="form-select">
-                                    <option v-for="n in [1, 3, 9]" :key="n" :value="n">{{ n }}</option>
-                                </select>
-                                <div v-if="form.errors.occurrence" style="color: #ef4444; font-size: 0.8rem; margin-top: 4px;">
-                                    {{ form.errors.occurrence }}
-                                </div>
-                            </div>
-                            <div class="form-group" style="margin-bottom: 0;">
-                                <label for="detection" class="form-label">Detection (Deteksi)</label>
-                                <select id="detection" v-model.number="form.detection" class="form-select">
-                                    <option v-for="n in [1, 3, 9]" :key="n" :value="n">{{ n }}</option>
-                                </select>
-                                <div v-if="form.errors.detection" style="color: #ef4444; font-size: 0.8rem; margin-top: 4px;">
-                                    {{ form.errors.detection }}
-                                </div>
-                            </div>
-                        </div>
-                        <div style="font-size: 0.9rem; font-weight: bold; color: var(--text-primary);">
-                            RPN (S × O × D) = <strong style="color: var(--accent-color);">{{ form.severity * form.occurrence * form.detection }}</strong>
-                        </div>
-                    </div>
-
                 </div>
 
                 <!-- Attachment Files -->
